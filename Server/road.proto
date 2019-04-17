@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+service Position {
+	rpc SendPosition (PositionRequest) returns (PositionReply) {}
+}
+
+// The request containing positional data of block
+message PositionRequest {
+	float x = 1;
+	float y = 2;
+	float z = 3;
+}
+
+// Reply containing either left or right
+message PositionReply {
+	string pos = 1;
+	float actuationForce = 2;
+}

@@ -33,8 +33,8 @@ class PositionServiceImpl final : public Position::Service {
   }
 };
 
-void RunServer() {
-  string server_address("192.168.172.153:50051");
+void RunServer(string address) {
+  string server_address(address);
   PositionServiceImpl service;
 
   ServerBuilder builder;
@@ -46,7 +46,14 @@ void RunServer() {
   server->Wait();
 }
 
-int main() {
-  RunServer();
+int main(int argc, char** argv) {
+  if (argc > 0) {
+    RunServer(argv[1]);
+  }
+  else
+    {
+      cout << "Must pass IP Address of server as argument" << endl;
+      return 1;
+    }
   return 0;
 }

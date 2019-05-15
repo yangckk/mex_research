@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+service Position {
+	rpc SendPosition (PositionRequest) returns (PositionReply) {}
+}
+
+// The request containing positional data of block
+message PositionRequest {
+	float x = 1;
+	float y = 2;
+	float z = 3;
+	float kp = 4;
+	float kd = 5;
+	float ki = 6;
+	google.protobuf.Timestamp clientTime = 7;
+}
+
+// Reply containing either left or right
+message PositionReply {
+	string pos = 1;
+	float actuationForce = 2;
+	int64 dTime = 3;
+	string serverTime = 4;
+}

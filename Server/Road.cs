@@ -26,15 +26,16 @@ public static partial class RoadReflection {
           "IoYBCg9Qb3NpdGlvblJlcXVlc3QSCQoBeBgBIAEoAhIJCgF5GAIgASgCEgkK",
           "AXoYAyABKAISCgoCa3AYBCABKAISCgoCa2QYBSABKAISCgoCa2kYBiABKAIS",
           "LgoKY2xpZW50VGltZRgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3Rh",
-          "bXAiVwoNUG9zaXRpb25SZXBseRILCgNwb3MYASABKAkSFgoOYWN0dWF0aW9u",
+          "bXAicgoNUG9zaXRpb25SZXBseRILCgNwb3MYASABKAkSFgoOYWN0dWF0aW9u",
           "Rm9yY2UYAiABKAISDQoFZFRpbWUYAyABKAMSEgoKc2VydmVyVGltZRgEIAEo",
-          "CTI+CghQb3NpdGlvbhIyCgxTZW5kUG9zaXRpb24SEC5Qb3NpdGlvblJlcXVl",
-          "c3QaDi5Qb3NpdGlvblJlcGx5IgBiBnByb3RvMw=="));
+          "CRIZChFzdGFuZGFyZERldmlhdGlvbhgFIAEoAjI+CghQb3NpdGlvbhIyCgxT",
+          "ZW5kUG9zaXRpb24SEC5Qb3NpdGlvblJlcXVlc3QaDi5Qb3NpdGlvblJlcGx5",
+          "IgBiBnByb3RvMw=="));
     descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
         new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
         new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
           new pbr::GeneratedClrTypeInfo(typeof(global::PositionRequest), global::PositionRequest.Parser, new[]{ "X", "Y", "Z", "Kp", "Kd", "Ki", "ClientTime" }, null, null, null),
-          new pbr::GeneratedClrTypeInfo(typeof(global::PositionReply), global::PositionReply.Parser, new[]{ "Pos", "ActuationForce", "DTime", "ServerTime" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(typeof(global::PositionReply), global::PositionReply.Parser, new[]{ "Pos", "ActuationForce", "DTime", "ServerTime", "StandardDeviation" }, null, null, null)
         }));
   }
   #endregion
@@ -295,7 +296,7 @@ public sealed partial class PositionRequest : pb::IMessage<PositionRequest> {
     }
     if (other.clientTime_ != null) {
       if (clientTime_ == null) {
-        clientTime_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+        ClientTime = new global::Google.Protobuf.WellKnownTypes.Timestamp();
       }
       ClientTime.MergeFrom(other.ClientTime);
     }
@@ -336,9 +337,9 @@ public sealed partial class PositionRequest : pb::IMessage<PositionRequest> {
         }
         case 58: {
           if (clientTime_ == null) {
-            clientTime_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            ClientTime = new global::Google.Protobuf.WellKnownTypes.Timestamp();
           }
-          input.ReadMessage(clientTime_);
+          input.ReadMessage(ClientTime);
           break;
         }
       }
@@ -379,6 +380,7 @@ public sealed partial class PositionReply : pb::IMessage<PositionReply> {
     actuationForce_ = other.actuationForce_;
     dTime_ = other.dTime_;
     serverTime_ = other.serverTime_;
+    standardDeviation_ = other.standardDeviation_;
     _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
   }
 
@@ -431,6 +433,17 @@ public sealed partial class PositionReply : pb::IMessage<PositionReply> {
     }
   }
 
+  /// <summary>Field number for the "standardDeviation" field.</summary>
+  public const int StandardDeviationFieldNumber = 5;
+  private float standardDeviation_;
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public float StandardDeviation {
+    get { return standardDeviation_; }
+    set {
+      standardDeviation_ = value;
+    }
+  }
+
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
   public override bool Equals(object other) {
     return Equals(other as PositionReply);
@@ -448,6 +461,7 @@ public sealed partial class PositionReply : pb::IMessage<PositionReply> {
     if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(ActuationForce, other.ActuationForce)) return false;
     if (DTime != other.DTime) return false;
     if (ServerTime != other.ServerTime) return false;
+    if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(StandardDeviation, other.StandardDeviation)) return false;
     return Equals(_unknownFields, other._unknownFields);
   }
 
@@ -458,6 +472,7 @@ public sealed partial class PositionReply : pb::IMessage<PositionReply> {
     if (ActuationForce != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(ActuationForce);
     if (DTime != 0L) hash ^= DTime.GetHashCode();
     if (ServerTime.Length != 0) hash ^= ServerTime.GetHashCode();
+    if (StandardDeviation != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(StandardDeviation);
     if (_unknownFields != null) {
       hash ^= _unknownFields.GetHashCode();
     }
@@ -487,6 +502,10 @@ public sealed partial class PositionReply : pb::IMessage<PositionReply> {
       output.WriteRawTag(34);
       output.WriteString(ServerTime);
     }
+    if (StandardDeviation != 0F) {
+      output.WriteRawTag(45);
+      output.WriteFloat(StandardDeviation);
+    }
     if (_unknownFields != null) {
       _unknownFields.WriteTo(output);
     }
@@ -506,6 +525,9 @@ public sealed partial class PositionReply : pb::IMessage<PositionReply> {
     }
     if (ServerTime.Length != 0) {
       size += 1 + pb::CodedOutputStream.ComputeStringSize(ServerTime);
+    }
+    if (StandardDeviation != 0F) {
+      size += 1 + 4;
     }
     if (_unknownFields != null) {
       size += _unknownFields.CalculateSize();
@@ -529,6 +551,9 @@ public sealed partial class PositionReply : pb::IMessage<PositionReply> {
     }
     if (other.ServerTime.Length != 0) {
       ServerTime = other.ServerTime;
+    }
+    if (other.StandardDeviation != 0F) {
+      StandardDeviation = other.StandardDeviation;
     }
     _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
   }
@@ -555,6 +580,10 @@ public sealed partial class PositionReply : pb::IMessage<PositionReply> {
         }
         case 34: {
           ServerTime = input.ReadString();
+          break;
+        }
+        case 45: {
+          StandardDeviation = input.ReadFloat();
           break;
         }
       }

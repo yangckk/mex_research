@@ -46,6 +46,7 @@ class Position final {
      public:
       virtual ~experimental_async_interface() {}
       virtual void SendPosition(::grpc::ClientContext* context, const ::PositionRequest* request, ::PositionReply* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void SendPosition(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::PositionReply* response, std::function<void(::grpc::Status)>) = 0;
     };
     virtual class experimental_async_interface* experimental_async() { return nullptr; }
   private:
@@ -66,6 +67,7 @@ class Position final {
       public StubInterface::experimental_async_interface {
      public:
       void SendPosition(::grpc::ClientContext* context, const ::PositionRequest* request, ::PositionReply* response, std::function<void(::grpc::Status)>) override;
+      void SendPosition(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::PositionReply* response, std::function<void(::grpc::Status)>) override;
      private:
       friend class Stub;
       explicit experimental_async(Stub* stub): stub_(stub) { }

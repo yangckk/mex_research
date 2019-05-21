@@ -39,6 +39,10 @@ void Position::Stub::experimental_async::SendPosition(::grpc::ClientContext* con
   return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_SendPosition_, context, request, response, std::move(f));
 }
 
+void Position::Stub::experimental_async::SendPosition(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::PositionReply* response, std::function<void(::grpc::Status)> f) {
+  return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_SendPosition_, context, request, response, std::move(f));
+}
+
 ::grpc::ClientAsyncResponseReader< ::PositionReply>* Position::Stub::AsyncSendPositionRaw(::grpc::ClientContext* context, const ::PositionRequest& request, ::grpc::CompletionQueue* cq) {
   return ::grpc::internal::ClientAsyncResponseReaderFactory< ::PositionReply>::Create(channel_.get(), cq, rpcmethod_SendPosition_, context, request, true);
 }

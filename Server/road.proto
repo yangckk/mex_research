@@ -23,4 +23,5 @@ message PositionReply {
 	float actuationForce = 2;
 	int64 dTime = 3;
 	string serverTime = 4;
+	float standardDeviation = 5;
 }

@@ -17,6 +17,7 @@ using grpc::Status;
 #include <string>
 #include <queue>
 #include <chrono>
+#include <cmath>
 
 using namespace std;
 
@@ -39,7 +40,10 @@ float PID(float Kp, float Kd, float Ki, float pos, float dt)
 }
 
 queue<long> dTimes;
+queue<long> sDevs;
 long total = 0;
+long stdDev = 0;
+long currStdDev = 0;
 class PositionServiceImpl final : public Position::Service {
   Status SendPosition(ServerContext* context, const PositionRequest* request,
 		      PositionReply* reply) override {
@@ -56,6 +60,17 @@ class PositionServiceImpl final : public Position::Service {
 	   total -= dTimes.front();
 	   dTimes.pop();
 	 }
+        currStdDev =  (currentDTime - total/dTimes.size()) * (currentDTime - total/dTimes.size());
+	stdDev += currStdDev;
+	sDevs.push(currStdDev);
+	if(sDevs.size() > 20)
+	{
+		stdDev -= sDevs.front();
+		sDevs.pop();
+	}
+	float standardDeviation = sqrt(stdDev/sDevs.size());
+	reply->set_standarddeviation(standardDeviation);
+
        reply->set_dtime(total/dTimes.size());
 
       if(request->x() < 0)

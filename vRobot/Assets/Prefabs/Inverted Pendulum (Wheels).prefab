@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 2928957858613878804}
   - component: {fileID: 2901462458847978730}
   m_Layer: 0
-  m_Name: Inverted Pendulum
-  m_TagString: Player
+  m_Name: Inverted Pendulum (Wheels)
+  m_TagString: Endpoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -63,7 +63,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pendulumBase: {fileID: 6563714169282900279}
   pendulumLever: {fileID: 6563714169650769058}
-  pendulumRod: {fileID: 6563714170005056048}
   leverLength: 4
   hingeLimitMin: -45
   hingeLimitMax: 45

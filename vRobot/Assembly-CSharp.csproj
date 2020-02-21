@@ -59,7 +59,6 @@
      <Compile Include="Assets\Scripts\Controllers\CameraController.cs" />
      <Compile Include="Assets\Scripts\Controllers\PIDController.cs" />
      <Compile Include="Assets\Scripts\Controllers\PlayerController.cs" />
-     <Compile Include="Assets\Scripts\Controllers\VPSController.cs" />
      <Compile Include="Assets\Scripts\EndpointPositionData.cs" />
      <Compile Include="Assets\Scripts\Endpoints.cs" />
      <Compile Include="Assets\Scripts\Pendulum.cs" />
@@ -67,6 +66,7 @@
      <Compile Include="Assets\Scripts\RoadGrpc.cs" />
      <Compile Include="Assets\Scripts\size.cs" />
      <Compile Include="Assets\Scripts\TerrainGenerator.cs" />
+     <Compile Include="Assets\Scripts\VPSClient.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/Anchal Sinha/Documents/Projects/Research/Yang/Git/mex_research/vRobot/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>

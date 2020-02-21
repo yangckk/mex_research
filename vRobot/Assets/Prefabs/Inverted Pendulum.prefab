@@ -62,7 +62,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pendulumBase: {fileID: 6964921583880791669}
   pendulumLever: {fileID: 6964921584253352928}
-  leverLength: 4
+  leverLength: 10
   hingeLimitMin: -45
   hingeLimitMax: 45
 --- !u!114 &1439657362064913320

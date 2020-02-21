@@ -9,7 +9,7 @@ public class Pendulum : MonoBehaviour
 
     public GameObject pendulumBase;
     public GameObject pendulumLever;
-    //public GameObject pendulumRod;
+    public GameObject pendulumRod;
 
     public float leverLength;
 
@@ -42,11 +42,11 @@ public class Pendulum : MonoBehaviour
         joint.useLimits = true;
 
         //modify the length of the lever
-        //pendulumLever.transform.localPosition = new Vector3(0, leverLength+1, 0); //1 is the height of the base
-        //pendulumRod.transform.localPosition = new Vector3(0, -leverLength, 0);
-        //pendulumRod.transform.localScale = new Vector3(LEVER_ROD_RADIUS, leverLength, LEVER_ROD_RADIUS);
-        pendulumLever.transform.localPosition = new Vector3(0, (leverLength/2)+1, 0);
-        pendulumLever.transform.localScale = new Vector3(LEVER_ROD_RADIUS, leverLength/2, LEVER_ROD_RADIUS);
+        pendulumLever.transform.localPosition = new Vector3(0, leverLength + 1, 0); //1 is the height of the base
+        pendulumRod.transform.localPosition = new Vector3(0, -leverLength, 0);
+        pendulumRod.transform.localScale = new Vector3(LEVER_ROD_RADIUS, leverLength, LEVER_ROD_RADIUS);
+        //pendulumLever.transform.localPosition = new Vector3(0, (leverLength/2)+1, 0);
+        //pendulumLever.transform.localScale = new Vector3(LEVER_ROD_RADIUS, leverLength/2, LEVER_ROD_RADIUS);
         joint.autoConfigureConnectedAnchor = true;
 
     }

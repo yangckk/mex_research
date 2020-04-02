@@ -39,6 +39,4 @@ RUN make
 
 EXPOSE 50051
 
-ENV ip=127.0.0.1:50051
-
-CMD /home/mex_research/UnityServer ${ip}
+CMD /home/mex_research/UnityServer

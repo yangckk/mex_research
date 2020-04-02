@@ -33,9 +33,9 @@ public static partial class RoadReflection {
           "IgBiBnByb3RvMw=="));
     descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
         new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
-        new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-          new pbr::GeneratedClrTypeInfo(typeof(global::PositionRequest), global::PositionRequest.Parser, new[]{ "X", "Y", "Z", "Kp", "Kd", "Ki", "ClientTime" }, null, null, null),
-          new pbr::GeneratedClrTypeInfo(typeof(global::PositionReply), global::PositionReply.Parser, new[]{ "Pos", "ActuationForce", "DTime", "ServerTime", "StandardDeviation" }, null, null, null)
+        new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(typeof(global::PositionRequest), global::PositionRequest.Parser, new[]{ "X", "Y", "Z", "Kp", "Kd", "Ki", "ClientTime" }, null, null, null, null),
+          new pbr::GeneratedClrTypeInfo(typeof(global::PositionReply), global::PositionReply.Parser, new[]{ "Pos", "ActuationForce", "DTime", "ServerTime", "StandardDeviation" }, null, null, null, null)
         }));
   }
   #endregion

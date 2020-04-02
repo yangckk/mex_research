@@ -104,13 +104,12 @@ void RunServer(string address) {
 }
 
 int main(int argc, char** argv) {
-  if (argc > 0) {
+  if (argc > 1) {
     RunServer(argv[1]);
   }
   else
     {
-      cout << "Must pass IP Address of server as argument" << endl;
-      return 1;
+      RunServer("[::]:50051");
     }
   return 0; 
 }

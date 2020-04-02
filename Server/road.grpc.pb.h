@@ -7,25 +7,24 @@
 #include "road.pb.h"
 
 #include <functional>
+#include <grpc/impl/codegen/port_platform.h>
 #include <grpcpp/impl/codegen/async_generic_service.h>
 #include <grpcpp/impl/codegen/async_stream.h>
 #include <grpcpp/impl/codegen/async_unary_call.h>
 #include <grpcpp/impl/codegen/client_callback.h>
-#include <grpcpp/impl/codegen/method_handler_impl.h>
+#include <grpcpp/impl/codegen/client_context.h>
+#include <grpcpp/impl/codegen/completion_queue.h>
+#include <grpcpp/impl/codegen/message_allocator.h>
+#include <grpcpp/impl/codegen/method_handler.h>
 #include <grpcpp/impl/codegen/proto_utils.h>
 #include <grpcpp/impl/codegen/rpc_method.h>
 #include <grpcpp/impl/codegen/server_callback.h>
+#include <grpcpp/impl/codegen/server_callback_handlers.h>
+#include <grpcpp/impl/codegen/server_context.h>
 #include <grpcpp/impl/codegen/service_type.h>
 #include <grpcpp/impl/codegen/status.h>
 #include <grpcpp/impl/codegen/stub_options.h>
 #include <grpcpp/impl/codegen/sync_stream.h>
-
-namespace grpc {
-class CompletionQueue;
-class Channel;
-class ServerCompletionQueue;
-class ServerContext;
-}  // namespace grpc
 
 class Position final {
  public:
@@ -47,7 +46,23 @@ class Position final {
       virtual ~experimental_async_interface() {}
       virtual void SendPosition(::grpc::ClientContext* context, const ::PositionRequest* request, ::PositionReply* response, std::function<void(::grpc::Status)>) = 0;
       virtual void SendPosition(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::PositionReply* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void SendPosition(::grpc::ClientContext* context, const ::PositionRequest* request, ::PositionReply* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void SendPosition(::grpc::ClientContext* context, const ::PositionRequest* request, ::PositionReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void SendPosition(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::PositionReply* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void SendPosition(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::PositionReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
     };
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    typedef class experimental_async_interface async_interface;
+    #endif
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    async_interface* async() { return experimental_async(); }
+    #endif
     virtual class experimental_async_interface* experimental_async() { return nullptr; }
   private:
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::PositionReply>* AsyncSendPositionRaw(::grpc::ClientContext* context, const ::PositionRequest& request, ::grpc::CompletionQueue* cq) = 0;
@@ -68,6 +83,16 @@ class Position final {
      public:
       void SendPosition(::grpc::ClientContext* context, const ::PositionRequest* request, ::PositionReply* response, std::function<void(::grpc::Status)>) override;
       void SendPosition(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::PositionReply* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void SendPosition(::grpc::ClientContext* context, const ::PositionRequest* request, ::PositionReply* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void SendPosition(::grpc::ClientContext* context, const ::PositionRequest* request, ::PositionReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void SendPosition(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::PositionReply* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void SendPosition(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::PositionReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
      private:
       friend class Stub;
       explicit experimental_async(Stub* stub): stub_(stub) { }
@@ -94,7 +119,7 @@ class Position final {
   template <class BaseClass>
   class WithAsyncMethod_SendPosition : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_SendPosition() {
       ::grpc::Service::MarkMethodAsync(0);
@@ -103,7 +128,7 @@ class Position final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SendPosition(::grpc::ServerContext* context, const ::PositionRequest* request, ::PositionReply* response) override {
+    ::grpc::Status SendPosition(::grpc::ServerContext* /*context*/, const ::PositionRequest* /*request*/, ::PositionReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -115,33 +140,59 @@ class Position final {
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_SendPosition : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_SendPosition() {
-      ::grpc::Service::experimental().MarkMethodCallback(0,
-        new ::grpc::internal::CallbackUnaryHandler< ::PositionRequest, ::PositionReply>(
-          [this](::grpc::ServerContext* context,
-                 const ::PositionRequest* request,
-                 ::PositionReply* response,
-                 ::grpc::experimental::ServerCallbackRpcController* controller) {
-                   return this->SendPosition(context, request, response, controller);
-                 }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(0,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::PositionRequest, ::PositionReply>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::PositionRequest* request, ::PositionReply* response) { return this->SendPosition(context, request, response); }));}
+    void SetMessageAllocatorFor_SendPosition(
+        ::grpc::experimental::MessageAllocator< ::PositionRequest, ::PositionReply>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(0);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(0);
+    #endif
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::PositionRequest, ::PositionReply>*>(handler)
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_SendPosition() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SendPosition(::grpc::ServerContext* context, const ::PositionRequest* request, ::PositionReply* response) override {
+    ::grpc::Status SendPosition(::grpc::ServerContext* /*context*/, const ::PositionRequest* /*request*/, ::PositionReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void SendPosition(::grpc::ServerContext* context, const ::PositionRequest* request, ::PositionReply* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    virtual ::grpc::ServerUnaryReactor* SendPosition(
+      ::grpc::CallbackServerContext* /*context*/, const ::PositionRequest* /*request*/, ::PositionReply* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendPosition(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::PositionRequest* /*request*/, ::PositionReply* /*response*/)
+    #endif
+      { return nullptr; }
   };
+  #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+  typedef ExperimentalWithCallbackMethod_SendPosition<Service > CallbackService;
+  #endif
+
   typedef ExperimentalWithCallbackMethod_SendPosition<Service > ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_SendPosition : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_SendPosition() {
       ::grpc::Service::MarkMethodGeneric(0);
@@ -150,7 +201,7 @@ class Position final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SendPosition(::grpc::ServerContext* context, const ::PositionRequest* request, ::PositionReply* response) override {
+    ::grpc::Status SendPosition(::grpc::ServerContext* /*context*/, const ::PositionRequest* /*request*/, ::PositionReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -158,7 +209,7 @@ class Position final {
   template <class BaseClass>
   class WithRawMethod_SendPosition : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_SendPosition() {
       ::grpc::Service::MarkMethodRaw(0);
@@ -167,7 +218,7 @@ class Position final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SendPosition(::grpc::ServerContext* context, const ::PositionRequest* request, ::PositionReply* response) override {
+    ::grpc::Status SendPosition(::grpc::ServerContext* /*context*/, const ::PositionRequest* /*request*/, ::PositionReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -178,32 +229,45 @@ class Position final {
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_SendPosition : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_SendPosition() {
-      ::grpc::Service::experimental().MarkMethodRawCallback(0,
-        new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
-          [this](::grpc::ServerContext* context,
-                 const ::grpc::ByteBuffer* request,
-                 ::grpc::ByteBuffer* response,
-                 ::grpc::experimental::ServerCallbackRpcController* controller) {
-                   this->SendPosition(context, request, response, controller);
-                 }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(0,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendPosition(context, request, response); }));
     }
     ~ExperimentalWithRawCallbackMethod_SendPosition() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SendPosition(::grpc::ServerContext* context, const ::PositionRequest* request, ::PositionReply* response) override {
+    ::grpc::Status SendPosition(::grpc::ServerContext* /*context*/, const ::PositionRequest* /*request*/, ::PositionReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void SendPosition(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    virtual ::grpc::ServerUnaryReactor* SendPosition(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendPosition(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_SendPosition : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_SendPosition() {
       ::grpc::Service::MarkMethodStreamed(0,
@@ -213,7 +277,7 @@ class Position final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status SendPosition(::grpc::ServerContext* context, const ::PositionRequest* request, ::PositionReply* response) override {
+    ::grpc::Status SendPosition(::grpc::ServerContext* /*context*/, const ::PositionRequest* /*request*/, ::PositionReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }

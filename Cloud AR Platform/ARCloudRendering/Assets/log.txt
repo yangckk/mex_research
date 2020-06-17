@@ -1,0 +1,95 @@
+5/22/2020 11:36:34 PM|Warn |Logger.set_Level|The current logging level has been changed to Debug.
+5/22/2020 11:36:48 PM|Fatal|<>c__DisplayClass1.<receiveRequest>b__0|System.AggregateException: One or more errors occurred. ---> System.Security.Authentication.AuthenticationException: A call to SSPI failed, see inner exception. ---> Mono.Security.Interface.TlsException: Handshake failed - error code: UNITYTLS_INTERNAL_ERROR
+                              at Mono.Unity.Debug.CheckAndThrow (Mono.Unity.UnityTls+unitytls_errorstate errorState, System.String context, Mono.Security.Interface.AlertDescription defaultAlert) [0x00027] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Unity.UnityTlsContext.ProcessHandshake () [0x0005e] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Net.Security.MobileAuthenticatedStream.ProcessHandshake (Mono.Net.Security.AsyncOperationStatus status) [0x0003e] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at (wrapper remoting-invoke-with-check) Mono.Net.Security.MobileAuthenticatedStream.ProcessHandshake(Mono.Net.Security.AsyncOperationStatus)
+                              at Mono.Net.Security.AsyncHandshakeRequest.Run (Mono.Net.Security.AsyncOperationStatus status) [0x00006] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Net.Security.AsyncProtocolRequest+<ProcessOperation>d__24.MoveNext () [0x000ff] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                            --- End of stack trace from previous location where exception was thrown ---
+                              at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw () [0x0000c] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess (System.Threading.Tasks.Task task) [0x0003e] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification (System.Threading.Tasks.Task task) [0x00028] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.ValidateEnd (System.Threading.Tasks.Task task) [0x00008] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.ConfiguredTaskAwaitable+ConfiguredTaskAwaiter.GetResult () [0x00000] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at Mono.Net.Security.AsyncProtocolRequest+<StartOperation>d__23.MoveNext () [0x0008b] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                               --- End of inner exception stack trace ---
+                              at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw () [0x0000c] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at Mono.Net.Security.MobileAuthenticatedStream+<ProcessAuthentication>d__47.MoveNext () [0x00254] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                               --- End of inner exception stack trace ---
+                              at System.Threading.Tasks.Task.ThrowIfExceptional (System.Boolean includeTaskCanceledExceptions) [0x00011] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Threading.Tasks.Task.Wait (System.Int32 millisecondsTimeout, System.Threading.CancellationToken cancellationToken) [0x00043] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Threading.Tasks.Task.Wait () [0x00000] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at Mono.Net.Security.MobileAuthenticatedStream.AuthenticateAsServer (System.Security.Cryptography.X509Certificates.X509Certificate serverCertificate, System.Boolean clientCertificateRequired, System.Security.Authentication.SslProtocols enabledSslProtocols, System.Boolean checkCertificateRevocation) [0x00011] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at System.Net.Security.SslStream.AuthenticateAsServer (System.Security.Cryptography.X509Certificates.X509Certificate serverCertificate, System.Boolean clientCertificateRequired, System.Security.Authentication.SslProtocols enabledSslProtocols, System.Boolean checkCertificateRevocation) [0x00006] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at WebSocketSharp.Net.WebSockets.TcpListenerWebSocketContext..ctor (System.Net.Sockets.TcpClient tcpClient, System.String protocol, System.Boolean secure, WebSocketSharp.Net.ServerSslConfiguration sslConfig, WebSocketSharp.Logger logger) [0x0005a] in <38d3cef14c5a4fc9a92de0991034bc1a>:0 
+                              at WebSocketSharp.Ext.GetWebSocketContext (System.Net.Sockets.TcpClient tcpClient, System.String protocol, System.Boolean secure, WebSocketSharp.Net.ServerSslConfiguration sslConfig, WebSocketSharp.Logger logger) [0x00001] in <38d3cef14c5a4fc9a92de0991034bc1a>:0 
+                              at WebSocketSharp.Server.WebSocketServer+<>c__DisplayClass1.<receiveRequest>b__0 (System.Object state) [0x00002] in <38d3cef14c5a4fc9a92de0991034bc1a>:0 
+                            ---> (Inner Exception #0) System.Security.Authentication.AuthenticationException: A call to SSPI failed, see inner exception. ---> Mono.Security.Interface.TlsException: Handshake failed - error code: UNITYTLS_INTERNAL_ERROR
+                              at Mono.Unity.Debug.CheckAndThrow (Mono.Unity.UnityTls+unitytls_errorstate errorState, System.String context, Mono.Security.Interface.AlertDescription defaultAlert) [0x00027] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Unity.UnityTlsContext.ProcessHandshake () [0x0005e] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Net.Security.MobileAuthenticatedStream.ProcessHandshake (Mono.Net.Security.AsyncOperationStatus status) [0x0003e] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at (wrapper remoting-invoke-with-check) Mono.Net.Security.MobileAuthenticatedStream.ProcessHandshake(Mono.Net.Security.AsyncOperationStatus)
+                              at Mono.Net.Security.AsyncHandshakeRequest.Run (Mono.Net.Security.AsyncOperationStatus status) [0x00006] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Net.Security.AsyncProtocolRequest+<ProcessOperation>d__24.MoveNext () [0x000ff] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                            --- End of stack trace from previous location where exception was thrown ---
+                              at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw () [0x0000c] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess (System.Threading.Tasks.Task task) [0x0003e] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification (System.Threading.Tasks.Task task) [0x00028] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.ValidateEnd (System.Threading.Tasks.Task task) [0x00008] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.ConfiguredTaskAwaitable+ConfiguredTaskAwaiter.GetResult () [0x00000] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at Mono.Net.Security.AsyncProtocolRequest+<StartOperation>d__23.MoveNext () [0x0008b] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                               --- End of inner exception stack trace ---
+                              at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw () [0x0000c] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at Mono.Net.Security.MobileAuthenticatedStream+<ProcessAuthentication>d__47.MoveNext () [0x00254] in <ae22a4e8f83c41d69684ae7f557133d9>:0 <---
+5/22/2020 11:36:52 PM|Warn |WebSocketServer.receiveRequest|Receiving has been stopped.
+                              reason: A blocking operation was interrupted by a call to WSACancelBlockingCall.
+5/22/2020 11:37:49 PM|Warn |Logger.set_Level|The current logging level has been changed to Debug.
+5/22/2020 11:38:01 PM|Warn |WebSocketServer.receiveRequest|Receiving has been stopped.
+                              reason: A blocking operation was interrupted by a call to WSACancelBlockingCall.
+5/23/2020 12:04:12 AM|Warn |Logger.set_Level|The current logging level has been changed to Debug.
+5/23/2020 12:04:22 AM|Fatal|<>c__DisplayClass1.<receiveRequest>b__0|System.AggregateException: One or more errors occurred. ---> System.Security.Authentication.AuthenticationException: A call to SSPI failed, see inner exception. ---> Mono.Security.Interface.TlsException: Handshake failed - error code: UNITYTLS_INTERNAL_ERROR
+                              at Mono.Unity.Debug.CheckAndThrow (Mono.Unity.UnityTls+unitytls_errorstate errorState, System.String context, Mono.Security.Interface.AlertDescription defaultAlert) [0x00027] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Unity.UnityTlsContext.ProcessHandshake () [0x0005e] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Net.Security.MobileAuthenticatedStream.ProcessHandshake (Mono.Net.Security.AsyncOperationStatus status) [0x0003e] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at (wrapper remoting-invoke-with-check) Mono.Net.Security.MobileAuthenticatedStream.ProcessHandshake(Mono.Net.Security.AsyncOperationStatus)
+                              at Mono.Net.Security.AsyncHandshakeRequest.Run (Mono.Net.Security.AsyncOperationStatus status) [0x00006] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Net.Security.AsyncProtocolRequest+<ProcessOperation>d__24.MoveNext () [0x000ff] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                            --- End of stack trace from previous location where exception was thrown ---
+                              at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw () [0x0000c] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess (System.Threading.Tasks.Task task) [0x0003e] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification (System.Threading.Tasks.Task task) [0x00028] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.ValidateEnd (System.Threading.Tasks.Task task) [0x00008] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.ConfiguredTaskAwaitable+ConfiguredTaskAwaiter.GetResult () [0x00000] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at Mono.Net.Security.AsyncProtocolRequest+<StartOperation>d__23.MoveNext () [0x0008b] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                               --- End of inner exception stack trace ---
+                              at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw () [0x0000c] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at Mono.Net.Security.MobileAuthenticatedStream+<ProcessAuthentication>d__47.MoveNext () [0x00254] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                               --- End of inner exception stack trace ---
+                              at System.Threading.Tasks.Task.ThrowIfExceptional (System.Boolean includeTaskCanceledExceptions) [0x00011] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Threading.Tasks.Task.Wait (System.Int32 millisecondsTimeout, System.Threading.CancellationToken cancellationToken) [0x00043] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Threading.Tasks.Task.Wait () [0x00000] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at Mono.Net.Security.MobileAuthenticatedStream.AuthenticateAsServer (System.Security.Cryptography.X509Certificates.X509Certificate serverCertificate, System.Boolean clientCertificateRequired, System.Security.Authentication.SslProtocols enabledSslProtocols, System.Boolean checkCertificateRevocation) [0x00011] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at System.Net.Security.SslStream.AuthenticateAsServer (System.Security.Cryptography.X509Certificates.X509Certificate serverCertificate, System.Boolean clientCertificateRequired, System.Security.Authentication.SslProtocols enabledSslProtocols, System.Boolean checkCertificateRevocation) [0x00006] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at WebSocketSharp.Net.WebSockets.TcpListenerWebSocketContext..ctor (System.Net.Sockets.TcpClient tcpClient, System.String protocol, System.Boolean secure, WebSocketSharp.Net.ServerSslConfiguration sslConfig, WebSocketSharp.Logger logger) [0x0005a] in <38d3cef14c5a4fc9a92de0991034bc1a>:0 
+                              at WebSocketSharp.Ext.GetWebSocketContext (System.Net.Sockets.TcpClient tcpClient, System.String protocol, System.Boolean secure, WebSocketSharp.Net.ServerSslConfiguration sslConfig, WebSocketSharp.Logger logger) [0x00001] in <38d3cef14c5a4fc9a92de0991034bc1a>:0 
+                              at WebSocketSharp.Server.WebSocketServer+<>c__DisplayClass1.<receiveRequest>b__0 (System.Object state) [0x00002] in <38d3cef14c5a4fc9a92de0991034bc1a>:0 
+                            ---> (Inner Exception #0) System.Security.Authentication.AuthenticationException: A call to SSPI failed, see inner exception. ---> Mono.Security.Interface.TlsException: Handshake failed - error code: UNITYTLS_INTERNAL_ERROR
+                              at Mono.Unity.Debug.CheckAndThrow (Mono.Unity.UnityTls+unitytls_errorstate errorState, System.String context, Mono.Security.Interface.AlertDescription defaultAlert) [0x00027] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Unity.UnityTlsContext.ProcessHandshake () [0x0005e] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Net.Security.MobileAuthenticatedStream.ProcessHandshake (Mono.Net.Security.AsyncOperationStatus status) [0x0003e] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at (wrapper remoting-invoke-with-check) Mono.Net.Security.MobileAuthenticatedStream.ProcessHandshake(Mono.Net.Security.AsyncOperationStatus)
+                              at Mono.Net.Security.AsyncHandshakeRequest.Run (Mono.Net.Security.AsyncOperationStatus status) [0x00006] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                              at Mono.Net.Security.AsyncProtocolRequest+<ProcessOperation>d__24.MoveNext () [0x000ff] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                            --- End of stack trace from previous location where exception was thrown ---
+                              at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw () [0x0000c] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess (System.Threading.Tasks.Task task) [0x0003e] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification (System.Threading.Tasks.Task task) [0x00028] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.TaskAwaiter.ValidateEnd (System.Threading.Tasks.Task task) [0x00008] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at System.Runtime.CompilerServices.ConfiguredTaskAwaitable+ConfiguredTaskAwaiter.GetResult () [0x00000] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at Mono.Net.Security.AsyncProtocolRequest+<StartOperation>d__23.MoveNext () [0x0008b] in <ae22a4e8f83c41d69684ae7f557133d9>:0 
+                               --- End of inner exception stack trace ---
+                              at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw () [0x0000c] in <437ba245d8404784b9fbab9b439ac908>:0 
+                              at Mono.Net.Security.MobileAuthenticatedStream+<ProcessAuthentication>d__47.MoveNext () [0x00254] in <ae22a4e8f83c41d69684ae7f557133d9>:0 <---
+5/23/2020 12:04:27 AM|Warn |WebSocketServer.receiveRequest|Receiving has been stopped.
+                              reason: A blocking operation was interrupted by a call to WSACancelBlockingCall.

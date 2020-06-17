@@ -1,0 +1,16 @@
+﻿#pragma kernel CombineAlpha
+
+RWTexture2D<float4> Result;
+Texture2D<float4> encodedFrame;
+uint width;
+uint height;
+
+uint2 index;
+
+[numthreads(32,32,1)]
+void CombineAlpha (uint3 id : SV_DispatchThreadID)
+{
+    float4 rgb = encodedFrame[id.xy];
+    float4 alpha = encodedFrame[id.xy + uint2(width, 0)];
+    Result[id.xy] = float4(rgb.r, rgb.g, rgb.b, alpha.r);
+}

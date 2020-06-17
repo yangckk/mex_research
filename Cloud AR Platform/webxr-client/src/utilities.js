@@ -1,4 +1,4 @@
-const socket = io.connect('https://ea18ce82040d.ngrok.io', {reconnect: true});
+const socket = io.connect('https://158c54bb0aa6.ngrok.io', {reconnect: true});
 
 function convertToBase64(buffer) {
     return btoa(String.fromCharCode(...new Uint8Array(buffer)));

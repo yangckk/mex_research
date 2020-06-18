@@ -262,13 +262,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 121140841}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 39e281d19f78bff489a962330c9cb3c1, type: 3}
+  m_Script: {fileID: 11500000, guid: 5d4ce1a3adca47847b11f14e3e90967b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   encoding: 1
-  pipeName: MECAL-
+  port: 5000
   quality: 0
-  controlledTransform: {fileID: 1389940159}
   cameraTexture: {fileID: 8400000, guid: 6b3e73588e086ac40864f2c8e6e2c359, type: 2}
   serverView: {fileID: 22371547}
   encoderShader: {fileID: 7200000, guid: a9386b872338cd04b8777938663b6155, type: 3}
@@ -653,7 +652,6 @@ GameObject:
   - component: {fileID: 1318813036}
   - component: {fileID: 1318813039}
   - component: {fileID: 1318813038}
-  - component: {fileID: 1318813037}
   m_Layer: 5
   m_Name: Webcam
   m_TagString: Untagged
@@ -680,18 +678,6 @@ RectTransform:
   m_AnchoredPosition: {x: 437, y: 32}
   m_SizeDelta: {x: 500, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1318813037
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1318813035}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26b9e9053ff53764e9bd7134a315aa62, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1318813038
 MonoBehaviour:
   m_ObjectHideFlags: 0

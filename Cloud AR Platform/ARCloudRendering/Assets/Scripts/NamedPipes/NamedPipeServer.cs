@@ -46,14 +46,15 @@ public class NamedPipeServer : MonoBehaviour
         Application.runInBackground = true;
         Application.targetFrameRate = Constants.FPS;
 
+        //initialize sizes of all textures (double width if encoding JPG)
         cameraTexture.width = Constants.WIDTH;
         cameraTexture.height = Constants.HEIGHT;
         encodedTexture = new RenderTexture(Constants.WIDTH * 2, Constants.HEIGHT, 0, RenderTextureFormat.Default);
         encodedTexture.enableRandomWrite = true;
         sendTexture = new Texture2D(Constants.WIDTH * (encoding == Encoding.JPG ? 2 : 1), Constants.HEIGHT, TextureFormat.RGBA32, false);
 
-        encoderKernelHandle = encoderShader.FindKernel("ExtractAlpha");
-
+        //Compute Shader handle
+        //encoderKernelHandle = encoderShader.FindKernel("ExtractAlpha");
         serverView.texture = cameraTexture;
 
         SetupConnection();
@@ -62,14 +63,23 @@ public class NamedPipeServer : MonoBehaviour
     void SetupConnection()
     {
         int size = (int) Mathf.Pow(2, 16);
-        ImageServer = new NamedPipeClientStream(".", pipeName + "Image", PipeDirection.Out, PipeOptions.WriteThrough);
-        ImageServer.Connect();
-        ImageWriter = new StreamWriter(ImageServer);
-        Debug.Log("Image Pipe Connection Opened");
-        PoseServer = new NamedPipeClientStream(".", pipeName + "Pose", PipeDirection.In, PipeOptions.WriteThrough);
-        PoseServer.Connect();
-        PoseReader = new StreamReader(PoseServer);
-        Debug.Log("Pose Pipe Connection Opened");
+        try
+        {
+            //Create a Named Pipe stream that only sends information (for sending encoded image data)
+            ImageServer = new NamedPipeClientStream(".", pipeName + "Image", PipeDirection.Out, PipeOptions.WriteThrough);
+            ImageServer.Connect();
+            ImageWriter = new StreamWriter(ImageServer);
+            Debug.Log("Image Pipe Connection Opened");
+            //Create a Named Pipe stream that only receives information (for receiving device pose data)
+            PoseServer = new NamedPipeClientStream(".", pipeName + "Pose", PipeDirection.In, PipeOptions.WriteThrough);
+            PoseServer.Connect();
+            PoseReader = new StreamReader(PoseServer);
+            Debug.Log("Pose Pipe Connection Opened");
+        }
+        catch
+        {
+            Debug.Log("Error Connecting to named pipe");
+        }
     }
 
     async void Update() {

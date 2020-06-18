@@ -3,14 +3,18 @@ const reader = new FileReader();
 let imageCanvas = null;
 let context = null;
 
-socket.on('connect', function (s) {
+socket.onopen = function(event) {
+    connected = true;
+}
 
-});
+socket.onclose = function(event) {
+    connected = false;
+}
 
-socket.on('image', function(data) {
+socket.onmessage = function(event) {
     imageCanvas = document.getElementById("image-canvas");
     context = imageCanvas.getContext('2d');
-    const base64 = convertToBase64(data);
+    const base64 = convertToBase64(event.data);
 
     try {
         let image = new Image();
@@ -18,10 +22,8 @@ socket.on('image', function(data) {
         image.onload = function () {
             context.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
             context.drawImage(image, 0, 0, imageCanvas.width, imageCanvas.height);
-
-            // log("Image displayed");
         }
     } catch (e) {
         log("Error displaying image");
     }
-});
+}

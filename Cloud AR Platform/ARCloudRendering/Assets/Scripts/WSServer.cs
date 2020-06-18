@@ -1,30 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine.Rendering;
-using System.IO.Pipes;
+using WebSocketSharp;
+using WebSocketSharp.Net;
+using WebSocketSharp.Server;
+using ErrorEventArgs = WebSocketSharp.ErrorEventArgs;
 
-public class NamedPipeServerGPU : MonoBehaviour
+public class ARCommunication : WebSocketBehavior
 {
-    public static NamedPipeServerGPU Instance;
+    public Action<string> MessageReceived = null;
 
+    protected override void OnOpen()
+    {
+        Debug.Log("Connection Opened");
+    }
+
+    protected override void OnClose(CloseEventArgs e)
+    {
+        Debug.Log("Connection Closed");
+    }
+
+    protected override void OnError(ErrorEventArgs e)
+    {
+        Debug.Log("Connection Error: " + e.Message);
+    }
+
+    protected override void OnMessage(MessageEventArgs e)
+    {
+        if (MessageReceived != null)
+            MessageReceived(e.Data);
+    }
+
+    public void SendData(byte[] data)
+    {
+        Send(data);
+    }
+}
+
+public class WSServer : MonoBehaviour
+{
     public Encoding encoding;
-    public string pipeName = "MECAL-";
+    public int port = 80;
     public int quality;
-    public Transform controlledTransform;
     public RenderTexture cameraTexture;
     public RawImage serverView;
 
     public ComputeShader encoderShader;
 
-    private NamedPipeClientStream ImageServer;
-    private StreamWriter ImageWriter;
-    private NamedPipeClientStream PoseServer;
-    private StreamReader PoseReader;
+    private WebSocketServer webSocketServer;
 
     private RenderTexture encodedTexture;
     private Texture2D sendTexture;
@@ -32,14 +63,12 @@ public class NamedPipeServerGPU : MonoBehaviour
     private int encoderKernelHandle;
     private byte[] encodedBytes;
 
-    private bool reading = false;
     private Transform transform;
-    private Thread ReadThread;
-
     private Queue<AsyncGPUReadbackRequest> requests = new Queue<AsyncGPUReadbackRequest>();
 
+    private Action<byte[]> SendMessage;
+    
     void Start() {
-        Instance = this;
         transform = GetComponent<Transform>();
         Application.runInBackground = true;
         Application.targetFrameRate = Constants.FPS;
@@ -63,59 +92,24 @@ public class NamedPipeServerGPU : MonoBehaviour
         int size = (int) Mathf.Pow(2, 16);
         try
         {
-            //Create a Named Pipe stream that only sends information (for sending encoded image data)
-            ImageServer = new NamedPipeClientStream(".", pipeName + "Image", PipeDirection.Out, PipeOptions.WriteThrough);
-            ImageServer.Connect();
-            Debug.Log("Image Pipe Connection Opened");
-            //Create a Named Pipe stream that only receives information (for receiving device pose data)
-            PoseServer = new NamedPipeClientStream(".", pipeName + "Pose", PipeDirection.In, PipeOptions.WriteThrough);
-            PoseServer.Connect();
-            PoseReader = new StreamReader(PoseServer);
-            Debug.Log("Pose Pipe Connection Opened");
+            Debug.Log("Starting to create WebSocket Server");
+            webSocketServer = new WebSocketServer(port, true);
+            var service = new ARCommunication();
+            service.MessageReceived = Receive;
+            SendMessage = service.SendData;
+            webSocketServer.AddWebSocketService<ARCommunication>("/", () => service);
+            webSocketServer.SslConfiguration = new ServerSslConfiguration(
+                new X509Certificate2(Path.Combine(Application.streamingAssetsPath, "server.pfx")),
+                false,
+                SslProtocols.Tls12,
+                false
+            );
+            webSocketServer.Start();
+            Debug.Log("Finished creating WebSocket Server");
         }
         catch
         {
-            Debug.Log("Error Connecting to named pipe");
-        }
-    }
-
-    private void Read()
-    {
-        if (PoseServer.IsConnected)
-        {
-            if (!reading)
-            {
-                //Read the buffer and clear the rest of the buffer to avoid the buffer overflowing due to timing issues
-                reading = true;
-                string json = PoseReader.ReadLine();
-                PoseReader.DiscardBufferedData();
-                try
-                {
-                    Pose pose = JsonUtility.FromJson<Pose>(json);
-                    //Calculate Quaternion from euler angles
-                    Vector3 position = new Vector3(pose.position.x, pose.position.y, -pose.position.z);
-                    Quaternion rotation =
-                        Quaternion.Inverse(new Quaternion(pose.rotation.x, pose.rotation.y, pose.rotation.z,
-                            pose.rotation.w));
-                    Vector3 euler = rotation.eulerAngles;
-                    //Three.js has different order of rotation for Euler angles, so we have to do that manually
-                    var rot = Quaternion.AngleAxis(euler.z, Vector3.back) *
-                              Quaternion.AngleAxis(euler.x, Vector3.right) *
-                              Quaternion.AngleAxis(euler.y, Vector3.up);
-                    //can only use main thread to assign transform values
-                    Loom.QueueOnMainThread(() =>
-                    {
-                        transform.position = position;
-                        transform.rotation = rot;
-                    });
-                }
-                catch (ArgumentException e)
-                {
-                    Debug.Log($"Error in JSON: {json}");
-                }
-
-                reading = false;
-            }
+            Debug.Log("Error Creating WebSocket Server");
         }
     }
 
@@ -145,8 +139,26 @@ public class NamedPipeServerGPU : MonoBehaviour
         Graphics.Blit(src, dest); //copy texture on GPU
     }
 
+    void Receive(string json)
+    {
+        Debug.Log(json);
+        Pose pose = JsonUtility.FromJson<Pose>(json);
+        //Calculate Quaternion from euler angles
+        Vector3 position = new Vector3(pose.position.x, pose.position.y, -pose.position.z);
+        Quaternion rotation =
+            Quaternion.Inverse(new Quaternion(pose.rotation.x, pose.rotation.y, pose.rotation.z,
+                pose.rotation.w));
+        Vector3 euler = rotation.eulerAngles;
+        //Three.js has different order of rotation for Euler angles, so we have to do that manually
+        var rot = Quaternion.AngleAxis(euler.z, Vector3.back) *
+                  Quaternion.AngleAxis(euler.x, Vector3.right) *
+                  Quaternion.AngleAxis(euler.y, Vector3.up);
+        //can only use main thread to assign transform values
+        transform.position = position;
+        transform.rotation = rot;
+    }
+
     void Update() {
-        Loom.RunAsync(Read); //Read happens forever in the background
         while (requests.Count > 0)
         {
             var req = requests.Peek();
@@ -159,28 +171,25 @@ public class NamedPipeServerGPU : MonoBehaviour
             else if (req.done)
             {
                 //encode the texture pulled from the GPU
-                if (ImageServer.IsConnected)
+                if (webSocketServer.IsListening)
                 {
                     var buffer = req.GetData<Color32>();
                     sendTexture.SetPixels32(buffer.ToArray());
                     switch (encoding)
                     {
                         case Encoding.JPG:
-                            encodedBytes = sendTexture.EncodeToJPG();
-                            ImageWriter.Write(encodedBytes);
+                            encodedBytes = sendTexture.EncodeToJPG(quality);
+                            SendMessage(encodedBytes);
                             break;
                         case Encoding.PNG:
                             encodedBytes = sendTexture.EncodeToPNG();
-                            ImageServer.Write(encodedBytes, 0, encodedBytes.Length);
+                            SendMessage(encodedBytes);
                             break;
                         case Encoding.BASE64:
-                            encodedBytes = sendTexture.EncodeToPNG();
-                            ImageWriter.Write(Convert.ToBase64String(encodedBytes));
                             break;
                     }
-                    //ImageWriter.Flush();
-                    requests.Dequeue();
                 }
+                requests.Dequeue();
             }
             else
             {
@@ -201,9 +210,6 @@ public class NamedPipeServerGPU : MonoBehaviour
     
     void OnApplicationQuit()
     {
-        ReadThread.Abort();
-        PoseReader.Close();
-        ImageServer.Close();
-        PoseServer.Close();
+        webSocketServer.Stop();
     }
 }

@@ -97,7 +97,7 @@ public class WSServer : MonoBehaviour
             var service = new ARCommunication();
             service.MessageReceived = Receive;
             SendMessage = service.SendData;
-            webSocketServer.AddWebSocketService<ARCommunication>("/", () => service);
+            webSocketServer.AddWebSocketService<ARCommunication>("/AR", () => service);
             webSocketServer.SslConfiguration = new ServerSslConfiguration(
                 new X509Certificate2(Path.Combine(Application.streamingAssetsPath, "server.pfx")),
                 false,

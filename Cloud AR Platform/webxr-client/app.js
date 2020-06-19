@@ -22,4 +22,4 @@ const privateKey = fs.readFileSync('ssl/server.key', 'utf8');
 const certificate = fs.readFileSync('ssl/server.crt', 'utf8');
 const options = {key: privateKey, cert: certificate, requestCert: false, rejectUnauthorized: false};
 const httpsServer = https.createServer(options, app);
-httpsServer.listen(4000, '10.0.0.218');
+httpsServer.listen(443, '10.0.0.218');

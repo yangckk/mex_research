@@ -266,7 +266,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   encoding: 1
-  port: 5000
+  port: 443
   quality: 0
   cameraTexture: {fileID: 8400000, guid: 6b3e73588e086ac40864f2c8e6e2c359, type: 2}
   serverView: {fileID: 22371547}

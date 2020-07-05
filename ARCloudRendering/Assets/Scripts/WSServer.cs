@@ -9,46 +9,12 @@ using UnityEngine.UI;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine.Rendering;
-using WebSocketSharp;
-using WebSocketSharp.Net;
 using WebSocketSharp.Server;
-using ErrorEventArgs = WebSocketSharp.ErrorEventArgs;
 using HttpStatusCode = WebSocketSharp.Net.HttpStatusCode;
-
-public class ARCommunication : WebSocketBehavior
-{
-    public Action<string> MessageReceived = null;
-
-    protected override void OnOpen()
-    {
-        Debug.Log("Connection Opened");
-    }
-
-    protected override void OnClose(CloseEventArgs e)
-    {
-        Debug.Log("Connection Closed");
-    }
-
-    protected override void OnError(ErrorEventArgs e)
-    {
-        Debug.Log("Connection Error: " + e.Message);
-    }
-
-    protected override void OnMessage(MessageEventArgs e)
-    {
-        if (MessageReceived != null)
-            MessageReceived(e.Data);
-        // Debug.Log(e.Data);
-    }
-
-    public void SendData(byte[] data)
-    {
-        Send(data);
-    }
-}
 
 public class WSServer : MonoBehaviour
 {
+    public bool GPUReadbackEnabled;
     public Encoding encoding;
     public int port = 80;
     public int quality;
@@ -152,26 +118,26 @@ public class WSServer : MonoBehaviour
 
     private void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
-        // This asynchronously loads AsyncGPUReadback requests into a queue
-        // Each request will pull the RenderTexture from the GPU 
-        if (requests.Count < 8)
+        if (GPUReadbackEnabled)
         {
-            switch (encoding)
+            // This asynchronously loads AsyncGPUReadback requests into a queue
+            // Each request will pull the RenderTexture from the GPU 
+            if (requests.Count < 8)
             {
-                case Encoding.JPG:
-                    ExtractAlpha();
-                    requests.Enqueue(AsyncGPUReadback.Request(encodedTexture));
-                    break;
-                case Encoding.PNG:
-                    requests.Enqueue(AsyncGPUReadback.Request(cameraTexture));
-                    break;
-                case Encoding.BASE64:
-                    requests.Enqueue(AsyncGPUReadback.Request(cameraTexture));
-                    break;
+                switch (encoding)
+                {
+                    case Encoding.JPG:
+                        ExtractAlpha();
+                        requests.Enqueue(AsyncGPUReadback.Request(encodedTexture));
+                        break;
+                    case Encoding.PNG:
+                        requests.Enqueue(AsyncGPUReadback.Request(cameraTexture));
+                        break;
+                }
             }
+            else
+                Debug.Log("Too many requests.");
         }
-        else
-            Debug.Log("Too many requests.");
 
         Graphics.Blit(src, dest); //copy texture on GPU
     }
@@ -196,42 +162,67 @@ public class WSServer : MonoBehaviour
     }
 
     void Update() {
-        while (requests.Count > 0)
+        if (GPUReadbackEnabled)
         {
-            var req = requests.Peek();
+            while (requests.Count > 0)
+            {
+                var req = requests.Peek();
 
-            if (req.hasError)
-            {
-                Debug.Log("GPU readback error detected.");
-                requests.Dequeue();
-            }
-            else if (req.done)
-            {
-                //encode the texture pulled from the GPU
-                if (webSocketServer.IsListening && SendMessage != null)
+                if (req.hasError)
                 {
+                    Debug.Log("GPU readback error detected.");
+                    requests.Dequeue();
+                }
+                else if (req.done)
+                {
+                    //encode the texture pulled from the GPU
+                    Debug.Log("Image pulled from GPU");
                     var buffer = req.GetData<Color32>();
                     sendTexture.SetPixels32(buffer.ToArray());
-                    switch (encoding)
-                    {
-                        case Encoding.JPG:
-                            encodedBytes = sendTexture.EncodeToJPG(quality);
-                            SendMessage(encodedBytes);
-                            break;
-                        case Encoding.PNG:
-                            encodedBytes = sendTexture.EncodeToPNG();
-                            SendMessage(encodedBytes);
-                            break;
-                        case Encoding.BASE64:
-                            break;
-                    }
+                    EncodeAndSend();
+
+                    requests.Dequeue();
                 }
-                requests.Dequeue();
+                else
+                {
+                    break;
+                }
             }
-            else
+        }
+        else
+        {
+            switch (encoding)
             {
-                break;
+                case Encoding.JPG:
+                    RenderTexture.active = encodedTexture;
+                    sendTexture.ReadPixels(new Rect(0, 0, Constants.WIDTH * 2, Constants.HEIGHT), 0, 0, false);
+                    break;
+                case Encoding.PNG:
+                    RenderTexture.active = cameraTexture;
+                    sendTexture.ReadPixels(new Rect(0, 0, Constants.WIDTH, Constants.HEIGHT), 0, 0, false);
+                    break;
             }
+            sendTexture.Apply(false);
+            EncodeAndSend();
+        }
+    }
+
+    void EncodeAndSend()
+    {
+        if (SendMessage != null)
+        {
+            switch (encoding)
+            {
+                case Encoding.JPG:
+                    encodedBytes = sendTexture.EncodeToJPG(quality);
+                    SendMessage(encodedBytes);
+                    break;
+                case Encoding.PNG:
+                    encodedBytes = sendTexture.EncodeToPNG();
+                    SendMessage(encodedBytes);
+                    break;
+            }
+            File.WriteAllBytes(Path.Combine(Application.streamingAssetsPath, "images", $"test.{encoding}"), encodedBytes);
         }
     }
 

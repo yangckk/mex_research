@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO.Pipes;
 using UnityEngine;
+using WebSocketSharp;
+using WebSocketSharp.Server;
 
 public static class Constants {
     public const int WIDTH = 237;
@@ -12,8 +14,7 @@ public static class Constants {
 
 public enum Encoding {
     JPG = 0,
-    PNG = 1,
-    BASE64 = 2
+    PNG = 1
 }
 
 [System.Serializable]
@@ -33,4 +34,36 @@ public class Pose
 {
     public Position position;
     public RotationQuaternion rotation;
+}
+
+public class ARCommunication : WebSocketBehavior
+{
+    public Action<string> MessageReceived = null;
+
+    protected override void OnOpen()
+    {
+        Debug.Log("Connection Opened");
+    }
+
+    protected override void OnClose(CloseEventArgs e)
+    {
+        Debug.Log("Connection Closed");
+    }
+
+    protected override void OnError(ErrorEventArgs e)
+    {
+        Debug.Log("Connection Error: " + e.Message);
+    }
+
+    protected override void OnMessage(MessageEventArgs e)
+    {
+        if (MessageReceived != null)
+            MessageReceived(e.Data);
+    }
+
+    public void SendData(byte[] data)
+    {
+        Debug.Log("Sending Encoded Image Data length: " + data.Length);
+        Send(data);
+    }
 }

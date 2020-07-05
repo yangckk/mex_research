@@ -134,9 +134,6 @@ public class NamedPipeServerGPU : MonoBehaviour
                 case Encoding.PNG:
                     requests.Enqueue(AsyncGPUReadback.Request(cameraTexture));
                     break;
-                case Encoding.BASE64:
-                    requests.Enqueue(AsyncGPUReadback.Request(cameraTexture));
-                    break;
             }
         }
         else
@@ -172,10 +169,6 @@ public class NamedPipeServerGPU : MonoBehaviour
                         case Encoding.PNG:
                             encodedBytes = sendTexture.EncodeToPNG();
                             ImageServer.Write(encodedBytes, 0, encodedBytes.Length);
-                            break;
-                        case Encoding.BASE64:
-                            encodedBytes = sendTexture.EncodeToPNG();
-                            ImageWriter.Write(Convert.ToBase64String(encodedBytes));
                             break;
                     }
                     //ImageWriter.Flush();

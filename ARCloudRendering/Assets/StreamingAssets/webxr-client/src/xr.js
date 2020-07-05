@@ -55,7 +55,7 @@ function onXRFrame(t, frame) {
 
     if (pose) {
         poseTransform = pose.transform.inverse;
-        sendPose({position: poseTransform.position, rotation: poseTransform.orientation})
+        sendPose(JSON.stringify({position: poseTransform.position, rotation: poseTransform.orientation}));
     }
 }
 

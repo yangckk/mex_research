@@ -98,8 +98,6 @@ public class NamedPipeServer : MonoBehaviour
                 sendTexture.ReadPixels(new Rect(0, 0, Constants.WIDTH, Constants.HEIGHT), 0, 0, false);
                 encodedBytes = sendTexture.EncodeToPNG();
                 break;
-            case Encoding.BASE64:
-                break;
         }
 
         if (ImageServer.IsConnected)

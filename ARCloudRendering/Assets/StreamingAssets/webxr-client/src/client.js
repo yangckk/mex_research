@@ -1,15 +1,9 @@
-const reader = new FileReader();
+let peerConnection = new RTCPeerConnection();
+let sendChannel = peerConnection.createDataChannel("pose");
 
-let imageCanvas = null;
-let context = null;
 
-socket.onopen = function(event) {
-    connected = true;
-}
 
-socket.onclose = function(event) {
-    connected = false;
-}
+peerConnection.onicecandidate = e => !e.candidate //send ice candidate
 
 socket.onmessage = function(event) {
     imageCanvas = document.getElementById("image-canvas");

@@ -1,16 +1,37 @@
-const url = "wss://10.0.0.218:5000";
-const name = "Client";
+const url = "https://bf6fb29fd9d6.ngrok.io";
 const webSocket = new WebSocket(url);
-let connected = false;
 
-webSocket.onopen = function (event) {
-    login();
-}
+localConnection = new RTCPeerConnection();
+sendChannel = localConnection.createDataChannel("sendChannel");
+sendChannel.onopen = ev => {
+    console.log(ev);
+};
+let receiveChannel = null;
+localConnection.ondatachannel = ev => {
+    receiveChannel = ev.channel;
+};
+localConnection.onicecandidate = e => {
+    if (e.candidate)
+        sendToServer({
+            type: 'offer',
+            data: e.candidate
+        });
+};
 
-function login() {
-    webSocket.send(JSON.stringify({"type": "login", "name": name}));
-}
+localConnection.createOffer()
+    .then(offer => localConnection.setLocalDescription(offer))
+    .then(() => sendToServer({
+        type: 'offer',
+        data: localConnection.localDescription
+    }))
+    .catch(error => console.error(error));
 
-function sendOffer(sdp) {
-    webSocket.send(JSON.stringify({"type": "offer", "offer": sdp, "name": name}));
+webSocket.onmessage = function (event) {
+    console.log(event.data);
+    console.log(event.data.type);
+};
+
+function sendToServer(json) {
+    var msg = JSON.stringify(json);
+    return webSocket.send(msg);
 }

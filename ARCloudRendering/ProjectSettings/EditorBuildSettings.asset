@@ -5,9 +5,6 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/WebSocketServer.unity
-    guid: 006b7842aafb59d40abbb11ea32f662b
   - enabled: 1
     path: Assets/Scenes/WebRTCServer.unity
     guid: 4e8a2f3637257364db802bb341484e7b

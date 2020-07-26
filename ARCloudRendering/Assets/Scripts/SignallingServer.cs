@@ -8,58 +8,56 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 using WebSocketSharp.Server;
-// using Unity.WebRTC;
+using Unity.WebRTC;
 using HttpStatusCode = WebSocketSharp.Net.HttpStatusCode;
 
 public class SignallingServer : MonoBehaviour
 {
     public int port = 443;
     private HttpServer httpServer;
-    // private RTCPeerConnection peerConnection;
-    // private RTCDataChannel receiveChannel, sendChannel;
+    private RTCPeerConnection peerConnection;
+    private RTCDataChannel receiveChannel, sendChannel;
 
     private Action<Body> SendMessage;
     
-    // public RTCAnswerOptions answerOptions = new RTCAnswerOptions()
-    // {
-    //     iceRestart = false,
-    // };
-    //
-    // private RTCConfiguration configuration = new RTCConfiguration()
-    // {
-    //     iceServers = new[] {new RTCIceServer() {urls = new[] {"stun.l.google.com:19302"}}}
-    // };
-    //
-    // public RTCDataChannelInit dataChannelInit = new RTCDataChannelInit()
-    // {
-    //     reliable = true,
-    // };
+    public RTCAnswerOptions answerOptions = new RTCAnswerOptions()
+    {
+        iceRestart = false,
+    };
     
-    // private void Awake()
-    // {
-    //     WebRTC.Initialize();
-    // }
+    private RTCConfiguration configuration = new RTCConfiguration()
+    {
+        iceServers = new[] {new RTCIceServer() {urls = new[] {"stun.l.google.com:19302"}}}
+    };
+    
+    public RTCDataChannelInit dataChannelInit = new RTCDataChannelInit()
+    {
+        reliable = true,
+    };
+    
+    private void Awake()
+    {
+        WebRTC.Initialize();
+    }
     public void Start()
     {
         SetupSignallingServer();
-        // peerConnection = new RTCPeerConnection(ref configuration);
-        // sendChannel = peerConnection.CreateDataChannel("send", ref dataChannelInit);
-        // peerConnection.OnDataChannel += channel =>
-        // {
-        //     receiveChannel = channel;
-        //     Debug.Log("Received Data Channel");
-        //     // receiveChannel.OnMessage += ReceiveMessage();
-        // };
-        // peerConnection.OnIceCandidate = candidate =>
-        // {
-        //     Debug.Log(candidate);
-        // };
-        // peerConnection.OnIceConnectionChange = state =>
-        // {
-        //     Debug.Log(state);
-        // };
-        //
-        // StartCoroutine(WebRTC.Update());
+        peerConnection = new RTCPeerConnection(ref configuration);
+        sendChannel = peerConnection.CreateDataChannel("send", ref dataChannelInit);
+        peerConnection.OnDataChannel += channel =>
+        {
+            receiveChannel = channel;
+            Debug.Log("Received Data Channel");
+            receiveChannel.OnMessage = ReceiveMessage;
+        };
+        peerConnection.OnIceCandidate = candidate =>
+        {
+            Debug.Log(candidate);
+        };
+        peerConnection.OnIceConnectionChange = state =>
+        {
+            Debug.Log(state);
+        };
     }
 
     public void SetupSignallingServer()
@@ -67,7 +65,7 @@ public class SignallingServer : MonoBehaviour
         try
         {
             Debug.Log("Starting to create WebSocket Server");
-            httpServer = new HttpServer(IPAddress.Parse("0.0.0.0"), port, true);
+            httpServer = new HttpServer(port, true);
             httpServer.DocumentRootPath = Path.Combine(Application.streamingAssetsPath, "webxr-client");
             
             // Set the HTTP GET request event.
@@ -102,12 +100,12 @@ public class SignallingServer : MonoBehaviour
                 res.Close(contents, true);
             };
             
-            // Action<SignallingService> serviceInitializer = delegate(SignallingService service)
-            // {
-            //     service.MessageReceived = ReceiveMessage;
-            //     SendMessage = service.SendData;
-            // };
-            // httpServer.AddWebSocketService("/signalling", serviceInitializer);
+            Action<SignallingService> serviceInitializer = delegate(SignallingService service)
+            {
+                service.MessageReceived = ReceiveMessage;
+                SendMessage = service.SendData;
+            };
+            httpServer.AddWebSocketService("/signalling", serviceInitializer);
             
             httpServer.SslConfiguration.ServerCertificate =
                 new X509Certificate2(Path.Combine(Application.streamingAssetsPath, "ssl", "server.pfx"), "mecal");
@@ -123,49 +121,54 @@ public class SignallingServer : MonoBehaviour
         }
     }
 
+    public void ReceiveMessage(byte[] bytes)
+    {
+        ReceiveMessage(JsonUtility.FromJson<Body>(System.Text.Encoding.UTF8.GetString(bytes)));
+    }
     public void ReceiveMessage(Body body)
     {
         Debug.Log($"Received Message ${body.data}");
-        // switch (body.type)
-        // {
-        //     case "offer":
-        //         StartCoroutine(ReceiveOffer(body.data));
-        //         break;
-        //     case "candidate":
-        //         RTCIceCandidate iceCandidate = new RTCIceCandidate() {candidate = body.data};
-        //         peerConnection.AddIceCandidate(ref iceCandidate);
-        //         break;
-        //     case "leave":
-        //         peerConnection = new RTCPeerConnection(ref configuration);
-        //         break;
-        //     default:
-        //         Debug.LogError("Invalid Message Type");
-        //         break;
-        // }
+        switch (body.type)
+        {
+            case "offer":
+                StartCoroutine(ReceiveOffer(body.data));
+                break;
+            case "candidate":
+                RTCIceCandidate iceCandidate = new RTCIceCandidate() {candidate = body.data};
+                peerConnection.AddIceCandidate(ref iceCandidate);
+                break;
+            case "leave":
+                peerConnection = new RTCPeerConnection(ref configuration);
+                break;
+            default:
+                Debug.LogError("Invalid Message Type");
+                break;
+        }
     }
 
-    // private IEnumerator ReceiveOffer(string offer)
-    // {
-    //     RTCSessionDescription desc = new RTCSessionDescription() { sdp = offer, type = RTCSdpType.Offer };
-    //     var op1 = peerConnection.SetRemoteDescription(ref desc);
-    //     yield return op1;
-    //     var op2 = peerConnection.CreateAnswer(ref answerOptions);
-    //     yield return op2;
-    //     RTCSessionDescription answerDesc = op2.Desc;
-    //     var op3 = peerConnection.SetLocalDescription(ref answerDesc);
-    //     yield return op3;
-    //     SendMessage(new Body()
-    //     {
-    //         type = "answer",
-    //         data = answerDesc.sdp,
-    //     });
-    // }
+    private IEnumerator ReceiveOffer(string offer)
+    {
+        RTCSessionDescription desc = new RTCSessionDescription() { sdp = offer, type = RTCSdpType.Offer };
+        var op1 = peerConnection.SetRemoteDescription(ref desc);
+        yield return op1;
+        var op2 = peerConnection.CreateAnswer(ref answerOptions);
+        yield return op2;
+        RTCSessionDescription answerDesc = op2.Desc;
+        var op3 = peerConnection.SetLocalDescription(ref answerDesc);
+        yield return op3;
+        SendMessage(new Body()
+        {
+            type = "answer",
+            data = answerDesc.sdp,
+        });
+    }
     
-    // private void OnDestroy()
-    // {
-    //     receiveChannel?.Close();
-    //     sendChannel?.Close();
-    //     peerConnection?.Close();
-    //     WebRTC.Dispose();
-    // }
+    private void OnDestroy()
+    {
+        httpServer.Stop();
+        receiveChannel?.Close();
+        sendChannel?.Close();
+        peerConnection?.Close();
+        WebRTC.Dispose();
+    }
 }

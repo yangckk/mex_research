@@ -36,7 +36,7 @@ public class Pose
     public RotationQuaternion rotation;
 }
 
-public class ARCommunication : WebSocketBehavior
+public class SignallingService : WebSocketBehavior
 {
     public Action<string> MessageReceived = null;
 
@@ -61,9 +61,16 @@ public class ARCommunication : WebSocketBehavior
             MessageReceived(e.Data);
     }
 
-    public void SendData(byte[] data)
+    public void SendData(Body body)
     {
-        Debug.Log("Sending Encoded Image Data length: " + data.Length);
-        Send(data);
+        Debug.Log($"Sending {body.type} message: " + body.data);
+        Send(JsonUtility.ToJson(body));
     }
+}
+
+[Serializable]
+public class Body
+{
+    public string type;
+    public string data;
 }

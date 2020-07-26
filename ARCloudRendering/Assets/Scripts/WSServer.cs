@@ -14,43 +14,15 @@ using HttpStatusCode = WebSocketSharp.Net.HttpStatusCode;
 
 public class WSServer : MonoBehaviour
 {
-    public bool GPUReadbackEnabled;
-    public Encoding encoding;
-    public int port = 80;
-    public int quality;
-    public RenderTexture cameraTexture;
-    public RawImage serverView;
+    public int port;
 
-    public ComputeShader encoderShader;
-
-    private HttpServer webSocketServer;
-
-    private RenderTexture encodedTexture;
-    private Texture2D sendTexture;
-
-    private int encoderKernelHandle;
-    private byte[] encodedBytes;
-
-    private Transform transform;
-    private Queue<AsyncGPUReadbackRequest> requests = new Queue<AsyncGPUReadbackRequest>();
-
-    private Action<byte[]> SendMessage;
+    private HttpServer server;
+    
+    private Action<Body> SendMessage;
     
     void Start() {
-        transform = GetComponent<Transform>();
         Application.runInBackground = true;
         Application.targetFrameRate = Constants.FPS;
-
-        //initialize sizes of all textures (double width if encoding JPG)
-        cameraTexture.width = Constants.WIDTH;
-        cameraTexture.height = Constants.HEIGHT;
-        encodedTexture = new RenderTexture(Constants.WIDTH * 2, Constants.HEIGHT, 0, RenderTextureFormat.Default);
-        encodedTexture.enableRandomWrite = true;
-        sendTexture = new Texture2D(Constants.WIDTH * (encoding == Encoding.JPG ? 2 : 1), Constants.HEIGHT, TextureFormat.RGBA32, false);
-
-        //Compute Shader handle
-        //encoderKernelHandle = encoderShader.FindKernel("ExtractAlpha");
-        serverView.texture = cameraTexture;
         
         SetupConnection();
     }
@@ -60,11 +32,11 @@ public class WSServer : MonoBehaviour
         try
         {
             Debug.Log("Starting to create WebSocket Server");
-            webSocketServer = new HttpServer(port, true);
-            webSocketServer.DocumentRootPath = Path.Combine(Application.streamingAssetsPath, "webxr-client");
+            server = new HttpServer(port, true);
+            server.DocumentRootPath = Path.Combine(Application.streamingAssetsPath, "webxr-client");
             
             // Set the HTTP GET request event.
-            webSocketServer.OnGet += (sender, e) =>
+            server.OnGet += (sender, e) =>
             {
                 var req = e.Request;
                 var res = e.Response;
@@ -95,19 +67,14 @@ public class WSServer : MonoBehaviour
                 res.Close(contents, true);
             };
 
-            Action<ARCommunication> serviceInitializer = delegate(ARCommunication service)
+            Action<SignallingService> serviceInitializer = delegate(SignallingService service)
             {
-                service.MessageReceived = Receive;
+                service.MessageReceived = ReceiveMessage;
                 SendMessage = service.SendData;
             };
-            webSocketServer.AddWebSocketService("/AR", serviceInitializer);
+            server.AddWebSocketService("/signalling", serviceInitializer);
             
-            webSocketServer.SslConfiguration.ServerCertificate =
-                new X509Certificate2(Path.Combine(Application.streamingAssetsPath, "ssl", "server.pfx"));
-            webSocketServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
-            webSocketServer.SslConfiguration.CheckCertificateRevocation = false;
-            
-            webSocketServer.Start();
+            server.Start();
             Debug.Log("Finished creating WebSocket Server");
         }
         catch
@@ -116,128 +83,22 @@ public class WSServer : MonoBehaviour
         }
     }
 
-    private void OnRenderImage(RenderTexture src, RenderTexture dest)
+    public void ReceiveMessage(string json)
     {
-        if (GPUReadbackEnabled)
+        Body body = JsonUtility.FromJson<Body>(json);
+        Debug.Log($"Received {body.type} message: {body.data}");
+
+        switch (body.type)
         {
-            // This asynchronously loads AsyncGPUReadback requests into a queue
-            // Each request will pull the RenderTexture from the GPU 
-            if (requests.Count < 8)
-            {
-                switch (encoding)
-                {
-                    case Encoding.JPG:
-                        ExtractAlpha();
-                        requests.Enqueue(AsyncGPUReadback.Request(encodedTexture));
-                        break;
-                    case Encoding.PNG:
-                        requests.Enqueue(AsyncGPUReadback.Request(cameraTexture));
-                        break;
-                }
-            }
-            else
-                Debug.Log("Too many requests.");
+            case "offer":
+                break;
+            case "candidate":
+                break;
         }
-
-        Graphics.Blit(src, dest); //copy texture on GPU
-    }
-
-    void Receive(string json)
-    {
-        Debug.Log(json);
-        Pose pose = JsonUtility.FromJson<Pose>(json);
-        //Calculate Quaternion from euler angles
-        Vector3 position = new Vector3(pose.position.x, pose.position.y, -pose.position.z);
-        Quaternion rotation =
-            Quaternion.Inverse(new Quaternion(pose.rotation.x, pose.rotation.y, pose.rotation.z,
-                pose.rotation.w));
-        Vector3 euler = rotation.eulerAngles;
-        //Three.js has different order of rotation for Euler angles, so we have to do that manually
-        var rot = Quaternion.AngleAxis(euler.z, Vector3.back) *
-                  Quaternion.AngleAxis(euler.x, Vector3.right) *
-                  Quaternion.AngleAxis(euler.y, Vector3.up);
-        //can only use main thread to assign transform values
-        transform.position = position;
-        transform.rotation = rot;
-    }
-
-    void Update() {
-        if (GPUReadbackEnabled)
-        {
-            while (requests.Count > 0)
-            {
-                var req = requests.Peek();
-
-                if (req.hasError)
-                {
-                    Debug.Log("GPU readback error detected.");
-                    requests.Dequeue();
-                }
-                else if (req.done)
-                {
-                    //encode the texture pulled from the GPU
-                    Debug.Log("Image pulled from GPU");
-                    var buffer = req.GetData<Color32>();
-                    sendTexture.SetPixels32(buffer.ToArray());
-                    EncodeAndSend();
-
-                    requests.Dequeue();
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-        else
-        {
-            switch (encoding)
-            {
-                case Encoding.JPG:
-                    RenderTexture.active = encodedTexture;
-                    sendTexture.ReadPixels(new Rect(0, 0, Constants.WIDTH * 2, Constants.HEIGHT), 0, 0, false);
-                    break;
-                case Encoding.PNG:
-                    RenderTexture.active = cameraTexture;
-                    sendTexture.ReadPixels(new Rect(0, 0, Constants.WIDTH, Constants.HEIGHT), 0, 0, false);
-                    break;
-            }
-            sendTexture.Apply(false);
-            EncodeAndSend();
-        }
-    }
-
-    void EncodeAndSend()
-    {
-        if (SendMessage != null)
-        {
-            switch (encoding)
-            {
-                case Encoding.JPG:
-                    encodedBytes = sendTexture.EncodeToJPG(quality);
-                    SendMessage(encodedBytes);
-                    break;
-                case Encoding.PNG:
-                    encodedBytes = sendTexture.EncodeToPNG();
-                    SendMessage(encodedBytes);
-                    break;
-            }
-            File.WriteAllBytes(Path.Combine(Application.streamingAssetsPath, "images", $"test.{encoding}"), encodedBytes);
-        }
-    }
-
-    void ExtractAlpha()
-    {
-        //Feed in correct parameters to the compute shader
-        encoderShader.SetTexture(encoderKernelHandle, "Result", encodedTexture);
-        encoderShader.SetTexture(encoderKernelHandle, "cameraFrame", cameraTexture);
-        encoderShader.SetInt("width", Constants.WIDTH);
-        encoderShader.SetInt("height", Constants.HEIGHT);
-        encoderShader.Dispatch(encoderKernelHandle, (Constants.WIDTH*2)/32, Constants.HEIGHT/32, 1);
     }
     
     void OnApplicationQuit()
     {
-        webSocketServer.Stop();
+        server.Stop();
     }
 }

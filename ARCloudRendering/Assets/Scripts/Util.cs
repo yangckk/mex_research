@@ -117,3 +117,45 @@ public class SignallingService : WebSocketBehavior
         Send(json);
     }
 }
+
+
+//SIGNALLING
+[Serializable]
+public class Body
+{
+    public string type;
+    public string data;
+}
+
+public class SignallingService : WebSocketBehavior
+{
+    public Action<Body> MessageReceived = null;
+
+    protected override void OnOpen()
+    {
+        Debug.Log("Connection Opened");
+    }
+
+    protected override void OnClose(CloseEventArgs e)
+    {
+        Debug.Log("Connection Closed");
+    }
+
+    protected override void OnError(ErrorEventArgs e)
+    {
+        Debug.Log("Connection Error: " + e.Message);
+    }
+
+    protected override void OnMessage(MessageEventArgs e)
+    {
+        if (MessageReceived != null)
+            MessageReceived(JsonUtility.FromJson<Body>(e.Data));
+    }
+
+    public void SendData(Body body)
+    {
+        string json = JsonUtility.ToJson(body);
+        Debug.Log("Sending JSON Data:\n " + json);
+        Send(json);
+    }
+}

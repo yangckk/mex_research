@@ -19,7 +19,6 @@ public class WSServer : MonoBehaviour
     public int port = 80;
     public int quality;
     public RenderTexture cameraTexture;
-    public RawImage serverView;
 
     public ComputeShader encoderShader;
 
@@ -32,14 +31,15 @@ public class WSServer : MonoBehaviour
     private byte[] encodedBytes;
 
     private Transform transform;
+    private Vector3 devicePosition;
+    private Quaternion deviceRotation;
     private Queue<AsyncGPUReadbackRequest> requests = new Queue<AsyncGPUReadbackRequest>();
-
-    private Action<byte[]> SendMessage;
     
     void Start() {
-        transform = GetComponent<Transform>();
         Application.runInBackground = true;
         Application.targetFrameRate = Constants.FPS;
+        
+        transform = GetComponent<Transform>();
 
         //initialize sizes of all textures (double width if encoding JPG)
         cameraTexture.width = Constants.WIDTH;
@@ -50,7 +50,6 @@ public class WSServer : MonoBehaviour
 
         //Compute Shader handle
         //encoderKernelHandle = encoderShader.FindKernel("ExtractAlpha");
-        serverView.texture = cameraTexture;
         
         SetupConnection();
     }
@@ -60,7 +59,7 @@ public class WSServer : MonoBehaviour
         try
         {
             Debug.Log("Starting to create WebSocket Server");
-            webSocketServer = new HttpServer(port, true);
+            webSocketServer = new HttpServer(port);
             webSocketServer.DocumentRootPath = Path.Combine(Application.streamingAssetsPath, "webxr-client");
             
             // Set the HTTP GET request event.
@@ -95,17 +94,17 @@ public class WSServer : MonoBehaviour
                 res.Close(contents, true);
             };
 
-            Action<ARCommunication> serviceInitializer = delegate(ARCommunication service)
+            Action<ARCommunication> serviceInitializer = service =>
             {
-                service.MessageReceived = Receive;
-                SendMessage = service.SendData;
+                WebSocketGlobals.MessageReceived = Receive;
+                WebSocketGlobals.SendMessage = service.SendData;
             };
             webSocketServer.AddWebSocketService("/AR", serviceInitializer);
             
-            webSocketServer.SslConfiguration.ServerCertificate =
-                new X509Certificate2(Path.Combine(Application.streamingAssetsPath, "ssl", "server.pfx"));
-            webSocketServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
-            webSocketServer.SslConfiguration.CheckCertificateRevocation = false;
+            // webSocketServer.SslConfiguration.ServerCertificate =
+            //     new X509Certificate2(Path.Combine(Application.streamingAssetsPath, "ssl", "server.pfx"));
+            // webSocketServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
+            // webSocketServer.SslConfiguration.CheckCertificateRevocation = false;
             
             webSocketServer.Start();
             Debug.Log("Finished creating WebSocket Server");
@@ -144,7 +143,7 @@ public class WSServer : MonoBehaviour
 
     void Receive(string json)
     {
-        Debug.Log(json);
+        // Debug.Log(json);
         Pose pose = JsonUtility.FromJson<Pose>(json);
         //Calculate Quaternion from euler angles
         Vector3 position = new Vector3(pose.position.x, pose.position.y, -pose.position.z);
@@ -154,14 +153,18 @@ public class WSServer : MonoBehaviour
         Vector3 euler = rotation.eulerAngles;
         //Three.js has different order of rotation for Euler angles, so we have to do that manually
         var rot = Quaternion.AngleAxis(euler.z, Vector3.back) *
-                  Quaternion.AngleAxis(euler.x, Vector3.right) *
-                  Quaternion.AngleAxis(euler.y, Vector3.up);
+                Quaternion.AngleAxis(euler.x, Vector3.right) *
+                Quaternion.AngleAxis(euler.y, Vector3.up);
+        
         //can only use main thread to assign transform values
-        transform.position = position;
-        transform.rotation = rot;
+        devicePosition = position;
+        deviceRotation = rot;
     }
 
     void Update() {
+        transform.position = devicePosition;
+        transform.rotation = deviceRotation;
+
         if (GPUReadbackEnabled)
         {
             while (requests.Count > 0)
@@ -176,7 +179,6 @@ public class WSServer : MonoBehaviour
                 else if (req.done)
                 {
                     //encode the texture pulled from the GPU
-                    Debug.Log("Image pulled from GPU");
                     var buffer = req.GetData<Color32>();
                     sendTexture.SetPixels32(buffer.ToArray());
                     EncodeAndSend();
@@ -202,27 +204,27 @@ public class WSServer : MonoBehaviour
                     sendTexture.ReadPixels(new Rect(0, 0, Constants.WIDTH, Constants.HEIGHT), 0, 0, false);
                     break;
             }
-            sendTexture.Apply(false);
+            sendTexture.Apply();
             EncodeAndSend();
         }
     }
 
     void EncodeAndSend()
     {
-        if (SendMessage != null)
+        if (WebSocketGlobals.Connected)
         {
             switch (encoding)
             {
                 case Encoding.JPG:
                     encodedBytes = sendTexture.EncodeToJPG(quality);
-                    SendMessage(encodedBytes);
+                    WebSocketGlobals.SendMessage(encodedBytes);
                     break;
                 case Encoding.PNG:
                     encodedBytes = sendTexture.EncodeToPNG();
-                    SendMessage(encodedBytes);
+                    WebSocketGlobals.SendMessage(encodedBytes);
                     break;
             }
-            File.WriteAllBytes(Path.Combine(Application.streamingAssetsPath, "images", $"test.{encoding}"), encodedBytes);
+            // File.WriteAllBytes(Path.Combine(Application.streamingAssetsPath, "images", $"test.{encoding}"), encodedBytes);
         }
     }
 

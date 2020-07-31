@@ -1,15 +1,16 @@
-//const socket = io.connect('https://158c54bb0aa6.ngrok.io', {reconnect: true});
-const socket = new WebSocket('wss://mecals1.ee.ucla.edu/AR');
+const socket = new WebSocket('wss://c6070ff333e7.ngrok.io/AR');
 let connected = false;
 function convertToBase64(buffer) {
-    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+    return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
 }
 
 function log(message) {
-    //socket.emit('log', message);
+    if (connected)
+        socket.send(JSON.stringify({'log': message}));
 }
 function error(message) {
-    //socket.emit('error', message);
+    if (connected)
+        socket.send(JSON.stringify({'error': message}));
 }
 function sendPose(pose) {
     if (connected)

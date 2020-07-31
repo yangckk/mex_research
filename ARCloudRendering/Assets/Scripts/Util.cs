@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO.Pipes;
 using UnityEngine;
+using UnityEngine.Events;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
@@ -36,34 +37,41 @@ public class Pose
     public RotationQuaternion rotation;
 }
 
+public static class WebSocketGlobals
+{
+    public static Action<string> MessageReceived;
+    public static Action<byte[]> SendMessage;
+    public static bool Connected;
+}
+
 public class ARCommunication : WebSocketBehavior
 {
-    public Action<string> MessageReceived = null;
-
     protected override void OnOpen()
     {
         Debug.Log("Connection Opened");
+        WebSocketGlobals.Connected = true;
     }
 
     protected override void OnClose(CloseEventArgs e)
     {
         Debug.Log("Connection Closed");
+        WebSocketGlobals.Connected = false;
     }
 
     protected override void OnError(ErrorEventArgs e)
     {
-        Debug.Log("Connection Error: " + e.Message);
+        Debug.LogError(e.Message);
     }
 
     protected override void OnMessage(MessageEventArgs e)
     {
-        if (MessageReceived != null)
-            MessageReceived(e.Data);
+        if (WebSocketGlobals.Connected)
+            WebSocketGlobals.MessageReceived(e.Data);
     }
 
     public void SendData(byte[] data)
     {
-        Debug.Log("Sending Encoded Image Data length: " + data.Length);
         Send(data);
+        // Debug.Log("Sending Encoded Image Data length: " + data.Length);
     }
 }

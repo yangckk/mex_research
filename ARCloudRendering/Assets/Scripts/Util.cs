@@ -40,11 +40,40 @@ public class Pose
 public static class WebSocketGlobals
 {
     public static Action<string> MessageReceived;
-    public static Action<byte[]> SendMessage;
+    public static Action<string> SendMessage;
     public static bool Connected;
 }
 
-public class ARCommunication : WebSocketBehavior
+//SIGNALLING
+[Serializable]
+public class Type
+{
+    public string type;
+}
+
+[Serializable]
+public class SDP
+{
+    public string type;
+    public string sdp;
+}
+
+[Serializable]
+public class CandidateString
+{
+    public string candidate;
+    public string sdpMid;
+    public int sdpMLineIndex;
+}
+
+[Serializable]
+public class Candidate
+{
+    public string type;
+    public CandidateString candidate;
+}
+
+public class SignallingService : WebSocketBehavior
 {
     protected override void OnOpen()
     {
@@ -60,7 +89,8 @@ public class ARCommunication : WebSocketBehavior
 
     protected override void OnError(ErrorEventArgs e)
     {
-        Debug.LogError(e.Message);
+        Debug.Log("Connection Error: " + e.Message);
+        WebSocketGlobals.Connected = false;
     }
 
     protected override void OnMessage(MessageEventArgs e)
@@ -69,93 +99,8 @@ public class ARCommunication : WebSocketBehavior
             WebSocketGlobals.MessageReceived(e.Data);
     }
 
-    public void SendData(byte[] data)
+    public void SendData(string data)
     {
         Send(data);
-        // Debug.Log("Sending Encoded Image Data length: " + data.Length);
-    }
-}
-
-
-//SIGNALLING
-[Serializable]
-public class Body
-{
-    public string type;
-    public string data;
-}
-
-public class SignallingService : WebSocketBehavior
-{
-    public Action<Body> MessageReceived = null;
-
-    protected override void OnOpen()
-    {
-        Debug.Log("Connection Opened");
-    }
-
-    protected override void OnClose(CloseEventArgs e)
-    {
-        Debug.Log("Connection Closed");
-    }
-
-    protected override void OnError(ErrorEventArgs e)
-    {
-        Debug.Log("Connection Error: " + e.Message);
-    }
-
-    protected override void OnMessage(MessageEventArgs e)
-    {
-        if (MessageReceived != null)
-            MessageReceived(JsonUtility.FromJson<Body>(e.Data));
-    }
-
-    public void SendData(Body body)
-    {
-        string json = JsonUtility.ToJson(body);
-        Debug.Log("Sending JSON Data:\n " + json);
-        Send(json);
-    }
-}
-
-
-//SIGNALLING
-[Serializable]
-public class Body
-{
-    public string type;
-    public string data;
-}
-
-public class SignallingService : WebSocketBehavior
-{
-    public Action<Body> MessageReceived = null;
-
-    protected override void OnOpen()
-    {
-        Debug.Log("Connection Opened");
-    }
-
-    protected override void OnClose(CloseEventArgs e)
-    {
-        Debug.Log("Connection Closed");
-    }
-
-    protected override void OnError(ErrorEventArgs e)
-    {
-        Debug.Log("Connection Error: " + e.Message);
-    }
-
-    protected override void OnMessage(MessageEventArgs e)
-    {
-        if (MessageReceived != null)
-            MessageReceived(JsonUtility.FromJson<Body>(e.Data));
-    }
-
-    public void SendData(Body body)
-    {
-        string json = JsonUtility.ToJson(body);
-        Debug.Log("Sending JSON Data:\n " + json);
-        Send(json);
     }
 }

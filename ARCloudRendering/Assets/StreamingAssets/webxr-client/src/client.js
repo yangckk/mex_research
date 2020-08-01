@@ -1,29 +1,71 @@
-let peerConnection = new RTCPeerConnection();
-let sendChannel = peerConnection.createDataChannel("pose");
+let candidates = []
+let playButton = document.getElementById("play-button");
+let overlay = document.getElementById("overlay");
 
+localConnection = new RTCPeerConnection({
+    iceServers: [     
+      {
+        urls: "stun:stun.l.google.com:19302"
+      }
+    ]
+});
+sendChannel = localConnection.createDataChannel("pose");
 
+let receiveChannel = null;
+localConnection.ondatachannel = ev => {
+    receiveChannel = ev.channel;
+};
 
-peerConnection.onicecandidate = e => !e.candidate //send ice candidate
-
-socket.onmessage = function(event) {
-    imageCanvas = document.getElementById("image-canvas");
-    context = imageCanvas.getContext('2d');
-    new Response(event.data).arrayBuffer()
-        .then(function(buffer) {
-            const base64 = convertToBase64(buffer);
-            return base64;
-        })
-        .then(function(base64) {
-            try {
-                let image = new Image();
-                image.src = "data:image/png;base64," + base64;
-                image.onload = function () {
-                    context.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
-                    context.drawImage(image, 0, 0, imageCanvas.width, imageCanvas.height);
-                }
-            } catch (e) {
-                error("Error displaying image");
-            }
-        })
-        .catch(e => error(e));    
+localConnection.oniceconnectionstatechange = function(){
+    console.log('ICE state: ', localConnection.iceConnectionState);
 }
+
+localConnection.ontrack = ev => {
+    console.log("Video track received");
+    let videoElement = document.createElement("video");
+    overlay.appendChild(videoElement);
+    videoElement.className = "fullscreen";
+    videoElement.srcObject = ev.streams[0];
+    videoElement.play();
+}
+
+localConnection.onicecandidate = e => {
+    if (e.candidate)
+        sendToSignallingServer({type: "candidate", candidate: e.candidate});
+};
+
+playButton.addEventListener('click', function(event) {
+    localConnection.createOffer({offerToReceiveVideo: true})
+    .then(offer => localConnection.setLocalDescription(offer))
+    .then(() => sendToSignallingServer(localConnection.localDescription))
+    .catch(error => console.error(error));
+
+    console.log("Offer created");
+    document.body.removeChild(playButton);
+});
+
+socket.onopen = function(event) {
+    connected = true;
+}
+
+socket.onclose = function(event) {
+    connected = false;
+}
+
+socket.onmessage = function (event) {
+    const body = JSON.parse(event.data);
+
+    switch (body.type) {
+        case "answer":
+            console.log("Received answer");
+            const desc = new RTCSessionDescription(body);
+            localConnection.setRemoteDescription(desc);
+            candidates.forEach(candidate => localConnection.addIceCandidate(candidate));
+            break;
+        case "candidate":
+            console.log("Received ICE candidate");
+            const candidate = new RTCIceCandidate(body.candidate);
+            candidates.push(candidate);
+            break;
+    }
+};

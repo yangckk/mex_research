@@ -10,9 +10,10 @@ uint2 index;
 [numthreads(32,32,1)]
 void ExtractAlpha (uint3 id : SV_DispatchThreadID)
 {
+    //BGRA format
     if (id.x < width) {
         float4 pixel = cameraFrame[id.xy];
-        Result[id.xy] = float4(pixel.r, pixel.g, pixel.b, 1.0);
+        Result[id.xy] = float4(pixel.b, pixel.g, pixel.r, 1.0);
     } else {
         float4 pixel = cameraFrame[id.xy - uint2(width, 0)];
         Result[id.xy] = float4(pixel.a, 0.0, 0.0, 1.0);

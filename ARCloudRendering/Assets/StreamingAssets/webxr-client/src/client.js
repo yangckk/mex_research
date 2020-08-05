@@ -1,6 +1,16 @@
-let candidates = []
 let playButton = document.getElementById("play-button");
 let overlay = document.getElementById("overlay");
+let videoElement = document.getElementById("ar-video");
+let buffer = document.getElementById("buffer-canvas");
+let arcanvas = document.createElement("image-canvas");
+overlay.appendChild(arcanvas);
+let sandbox = new GlslCanvas(arcanvas);
+
+const shader = 'uniform sampler2D u_encodedImage;\nuniform int width;\nuniform int height;\nvoid main(){\nvec2 xy = gl_FragCoord.xy;\nvec3 rgb = texture2D(u_encodedImage, xy).rgb;\nfloat a = texture2D(u_encodedImage, xy + vec2(width, 0.0)).a;\ngl_FragColor = vec4(rgb, a);\n}';
+sandbox.load(shader);
+
+
+let candidates = []
 
 localConnection = new RTCPeerConnection({
     iceServers: [     
@@ -22,9 +32,6 @@ localConnection.oniceconnectionstatechange = function(){
 
 localConnection.ontrack = ev => {
     console.log("Video track received");
-    let videoElement = document.createElement("video");
-    overlay.appendChild(videoElement);
-    videoElement.className = "fullscreen";
     videoElement.srcObject = ev.streams[0];
     videoElement.play();
 }
@@ -69,3 +76,14 @@ socket.onmessage = function (event) {
             break;
     }
 };
+
+function render() {
+    buffer.getContext("2d").drawImage(video, 0, 0);
+    const dataURL = buffer.toDataURL();
+    sandbox.setUniform('u_encodedImage', dataURL);
+    sandbox.setUniform('width', 237);
+    sandbox.setUniform('height', 512);
+    window.requestAnimationFrame(render);
+}
+
+render();

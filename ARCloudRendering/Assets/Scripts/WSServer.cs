@@ -16,7 +16,8 @@ public class WSServer : MonoBehaviour
 {
     public bool GPUReadbackEnabled;
     public Encoding encoding;
-    public int port = 80;
+    public bool secure;
+    public int port;
     public int quality;
     public RenderTexture cameraTexture;
 
@@ -59,7 +60,7 @@ public class WSServer : MonoBehaviour
         try
         {
             Debug.Log("Starting to create WebSocket Server");
-            webSocketServer = new HttpServer(port);
+            webSocketServer = new HttpServer(port, secure);
             webSocketServer.DocumentRootPath = Path.Combine(Application.streamingAssetsPath, "webxr-client");
             
             // Set the HTTP GET request event.
@@ -101,17 +102,19 @@ public class WSServer : MonoBehaviour
             };
             webSocketServer.AddWebSocketService("/AR", serviceInitializer);
             
-            // webSocketServer.SslConfiguration.ServerCertificate =
-            //     new X509Certificate2(Path.Combine(Application.streamingAssetsPath, "ssl", "server.pfx"));
-            // webSocketServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
-            // webSocketServer.SslConfiguration.CheckCertificateRevocation = false;
+            if (secure) {
+                webSocketServer.SslConfiguration.ServerCertificate =
+                    new X509Certificate2(Path.Combine(Application.streamingAssetsPath, "ssl", "server_self.pfx"));
+                webSocketServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
+                webSocketServer.SslConfiguration.CheckCertificateRevocation = false;
+            }
             
             webSocketServer.Start();
             Debug.Log("Finished creating WebSocket Server");
         }
-        catch
+        catch (Exception e)
         {
-            Debug.Log("Error Creating WebSocket Server");
+            Debug.Log($"Error Creating WebSocket Server\n{e.Message}");
         }
     }
 

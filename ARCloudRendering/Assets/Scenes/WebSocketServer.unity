@@ -198,7 +198,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GPUReadbackEnabled: 0
   encoding: 1
-  port: 8000
+  secure: 0
+  port: 5000
   quality: 70
   cameraTexture: {fileID: 8400000, guid: 6b3e73588e086ac40864f2c8e6e2c359, type: 2}
   encoderShader: {fileID: 7200000, guid: a9386b872338cd04b8777938663b6155, type: 3}

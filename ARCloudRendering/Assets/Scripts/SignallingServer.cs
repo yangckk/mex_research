@@ -89,7 +89,7 @@ public class SignallingServer : MonoBehaviour
         try
         {
             Debug.Log("Starting to create WebSocket Server");
-            httpServer = new HttpServer(port);
+            httpServer = new HttpServer(port, true);
             httpServer.DocumentRootPath = Path.Combine(Application.streamingAssetsPath, "webxr-client");
 
             // Set the HTTP GET request event.
@@ -131,10 +131,10 @@ public class SignallingServer : MonoBehaviour
             };
             httpServer.AddWebSocketService("/signalling", serviceInitializer);
 
-            // httpServer.SslConfiguration.ServerCertificate =
-            //     new X509Certificate2(Path.Combine(Application.streamingAssetsPath, "ssl", "server.pfx"), "mecal");
-            // httpServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
-            // httpServer.SslConfiguration.CheckCertificateRevocation = false;
+            httpServer.SslConfiguration.ServerCertificate =
+                new X509Certificate2(Path.Combine(Application.streamingAssetsPath, "ssl", "server.pfx"), "mecal");
+            httpServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
+            httpServer.SslConfiguration.CheckCertificateRevocation = false;
 
             httpServer.Start();
             Debug.Log("Finished creating WebSocket Server");

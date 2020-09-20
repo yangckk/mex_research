@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebc559759177ba1468d11960a623817a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  port: 8000
+  port: 443
   mainCamera: {fileID: 885615644}
   alphaCamera: {fileID: 399711470}
 --- !u!4 &121140844

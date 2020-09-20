@@ -1,5 +1,8 @@
-const socket = new WebSocket('wss://487a022a4407.ngrok.io/signalling');
+const socket = new WebSocket('wss://10.0.0.218/signalling');
 let connected = false;
+
+const width = 237;
+const height = 512;
 
 function convertToBase64(buffer) {
     return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));

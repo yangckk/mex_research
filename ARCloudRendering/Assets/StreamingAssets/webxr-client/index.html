@@ -21,17 +21,15 @@
             position:absolute;
             top: 0;
             left: 0;
-            z-index: 10;
-            width:100%;
+            width: 100%;
             height: 100%;
         }
         .center {
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            margin-top: auto;
-            margin-bottom: auto;
+            position: absolute;
             top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* z-index: 10; */
         }
 
     </style>
@@ -39,7 +37,9 @@
 <body>
     <video id="ar-video" class="fullscreen" playsinline></video>
     <canvas id="buffer-canvas"></canvas>
-    <div id="overlay"></div>
+    <div id="overlay">
+        <canvas id="ar-canvas" data-fragment-url="src/decoderShader.glsl"></canvas>
+    </div>
     <img src="static/images/playbutton.png" id="play-button" class="center" width="100" height="100" />
     <script src="src/client.js"></script>
     <!-- <script type="module" src="src/xr.js"></script> -->

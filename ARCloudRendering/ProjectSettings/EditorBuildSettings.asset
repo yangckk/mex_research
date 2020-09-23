@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/WebSocketServer.unity
+    path: Assets/Scenes/UCLAServer.unity
     guid: 006b7842aafb59d40abbb11ea32f662b
   m_configObjects: {}

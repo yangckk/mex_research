@@ -8,8 +8,8 @@ using WebSocketSharp;
 using WebSocketSharp.Server;
 
 public static class Constants {
-    public const int WIDTH = 237;
-    public const int HEIGHT = 512;
+    public const int WIDTH = 234;
+    public const int HEIGHT = 108;
     public const int FPS = 60;
 }
 

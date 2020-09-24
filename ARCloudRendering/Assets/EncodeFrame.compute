@@ -15,6 +15,6 @@ void ExtractAlpha (uint3 id : SV_DispatchThreadID)
         Result[id.xy] = float4(pixel.r, pixel.g, pixel.b, 1.0);
     } else {
         float4 pixel = cameraFrame[id.xy - uint2(width, 0)];
-        Result[id.xy] = float4(pixel.a, 0.0, 0.0, 1.0);
+        Result[id.xy] = float4(pixel.a, pixel.a, pixel.a, 1.0);
     }
 }

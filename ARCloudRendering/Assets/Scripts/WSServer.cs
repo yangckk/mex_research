@@ -50,7 +50,7 @@ public class WSServer : MonoBehaviour
         sendTexture = new Texture2D(Constants.WIDTH * (encoding == Encoding.JPG ? 2 : 1), Constants.HEIGHT, TextureFormat.RGBA32, false);
 
         //Compute Shader handle
-        //encoderKernelHandle = encoderShader.FindKernel("ExtractAlpha");
+        encoderKernelHandle = encoderShader.FindKernel("ExtractAlpha");
         
         SetupConnection();
     }
@@ -199,6 +199,7 @@ public class WSServer : MonoBehaviour
             switch (encoding)
             {
                 case Encoding.JPG:
+                    ExtractAlpha();
                     RenderTexture.active = encodedTexture;
                     sendTexture.ReadPixels(new Rect(0, 0, Constants.WIDTH * 2, Constants.HEIGHT), 0, 0, false);
                     break;

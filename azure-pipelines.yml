@@ -1,0 +1,47 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+- nvenc-webrtc
+
+pool:
+  vmImage: 'macOS-10.14'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '12.14.0'
+    checkLatest: true
+  displayName: 'Install Node'
+
+- task: Npm@1
+  inputs:
+    command: 'install'
+    workingDir: './ARCloudRendering/MobileApp'
+
+- task: CocoaPods@0
+  inputs:
+    workingDirectory: './ARCloudRendering/MobileApp/ios'
+    forceRepoUpdate: false
+
+- task: InstallAppleCertificate@2
+  inputs:
+    certSecureFile: 'development.p12'
+  displayName: Install Apple Certificate
+
+- task: InstallAppleProvisioningProfile@1
+  inputs:
+    provisioningProfileLocation: 'secureFiles'
+    provProfileSecureFile: 'Anchals_Provisioning_Profile.mobileprovision'
+    keychain: 'temp'
+  displayName: 'Install Apple Provisioning Profile'
+
+- task: Xcode@5
+  inputs:
+    actions: 'build'
+    xcWorkspacePath: './ARCloudRendering/MobileApp/ios/MobileApp.xcodeproj'
+    packageApp: true
+    signingOption: 'default'
